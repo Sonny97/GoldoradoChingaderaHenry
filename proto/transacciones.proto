@@ -1,0 +1,147 @@
+// =============================================================================
+//  ms-transacciones  ·  MongoDB  ·  puerto gRPC por defecto 50054
+//
+//  Informacion TRANSACCIONAL y DE SEGURIDAD de toda la plataforma:
+//   - transacciones      libro de movimientos de dinero (deposito, apuesta,
+//                        premio, retiro, reembolso) con su historial de
+//                        estados EMBEBIDO (lo que era Log_Transaccion).
+//   - logs_sesion        cada intento de acceso, exitoso o no (Log_Sesion).
+//   - eventos_seguridad  registro, cambio de clave, recuperacion, cierre de
+//                        sesion, vinculacion de Google/Microsoft...
+//
+//  Nadie mas escribe en Mongo: los otros servicios le avisan por gRPC.
+// =============================================================================
+
+syntax = "proto3";
+
+package goldorado.transacciones;
+
+import "comun.proto";
+
+service Transacciones {
+  rpc Salud (goldorado.comun.Vacio) returns (goldorado.comun.EstadoSalud);
+
+  // ------------------------------------------------------------ transacciones
+  // IDEMPOTENTE por `codigo`: si ya existe, NO la duplica; devuelve la
+  // existente (y si el estado cambio, lo agrega al historial).
+  rpc RegistrarTransaccion (RegistrarTransaccionRequest) returns (Transaccion);
+  // Agrega un cambio de estado al historial. Fallo: NOT_FOUND.
+  rpc ActualizarEstadoTransaccion (ActualizarEstadoRequest) returns (Transaccion);
+  // Las mas recientes primero.
+  rpc ListarTransacciones (ListarTransaccionesRequest) returns (ListarTransaccionesResponse);
+  // Fallo: NOT_FOUND.
+  rpc ObtenerTransaccion (CodigoRequest) returns (Transaccion);
+
+  // ---------------------------------------------------------------- seguridad
+  rpc RegistrarIntentoSesion (IntentoSesion) returns (goldorado.comun.Vacio);
+  // Intentos FALLIDOS con ese correo en los ultimos N minutos (fuerza bruta).
+  rpc ContarIntentosFallidos (ContarIntentosRequest) returns (ContarIntentosResponse);
+  rpc RegistrarEventoSeguridad (EventoSeguridad) returns (goldorado.comun.Vacio);
+  rpc ListarEventosSeguridad (ListarEventosRequest) returns (ListarEventosResponse);
+}
+
+message CambioEstado {
+  optional string estado_anterior = 1;   // ausente = la transaccion acaba de nacer
+  string estado_nuevo = 2;
+  string fecha = 3;                      // ISO 8601
+  string ejecutado_por = 4;              // 'APUESTA_WEB', 'WOMPI_WEBHOOK', 'SISTEMA'...
+  optional string codigo_error = 5;
+  optional string payload = 6;           // JSON crudo de la pasarela, si aplica
+}
+
+message Transaccion {
+  string codigo = 1;                       // clave de negocio unica (UUID o referencia de pago)
+  int64 id_usuario = 2;
+  string tipo = 3;                         // DEPOSITO | RETIRO | APUESTA | PREMIO | REEMBOLSO
+  string estado = 4;                       // PENDIENTE | COMPLETADO | FALLIDO | REVERSADO
+  double monto = 5;                        // siempre > 0; el signo lo da el tipo
+  string moneda = 6;                       // 'COP'
+  string origen = 7;                       // servicio que la registro: 'ms-apuestas' | 'ms-pagos'
+  optional string referencia_externa = 8;  // id de la apuesta, id de transaccion Wompi...
+  optional string proveedor = 9;           // 'Wompi'
+  optional string metodo = 10;             // 'PSE' | 'NEQUI' | 'CARD' ...
+  string creado_en = 11;
+  string actualizado_en = 12;
+  repeated CambioEstado historial = 13;
+}
+
+message RegistrarTransaccionRequest {
+  string codigo = 1;
+  int64 id_usuario = 2;
+  string tipo = 3;
+  string estado = 4;
+  double monto = 5;
+  string moneda = 6;
+  string origen = 7;
+  optional string referencia_externa = 8;
+  optional string proveedor = 9;
+  optional string metodo = 10;
+  string ejecutado_por = 11;
+  optional string payload = 12;
+  optional string fecha = 13;              // ISO 8601; ausente = ahora
+}
+
+message ActualizarEstadoRequest {
+  string codigo = 1;
+  string estado_nuevo = 2;
+  string ejecutado_por = 3;
+  optional string codigo_error = 4;
+  optional string payload = 5;
+}
+
+message ListarTransaccionesRequest {
+  int64 id_usuario = 1;
+  int32 limite = 2;            // 0 = 20
+  optional string tipo = 3;    // filtra por tipo
+}
+
+message ListarTransaccionesResponse {
+  repeated Transaccion transacciones = 1;
+}
+
+message CodigoRequest {
+  string codigo = 1;
+}
+
+message IntentoSesion {
+  optional int64 id_usuario = 1;     // ausente si el correo tecleado no existe
+  string email_intento = 2;          // lo que se tecleo, exista o no la cuenta
+  string ip = 3;
+  optional string user_agent = 4;
+  bool exitoso = 5;
+  optional string motivo_fallo = 6;  // obligatorio si exitoso = false (lo valida el $jsonSchema)
+  string proveedor = 7;              // LOCAL | GOOGLE | MICROSOFT
+  optional string fecha = 8;         // ISO 8601; ausente = ahora
+}
+
+message ContarIntentosRequest {
+  string email_intento = 1;
+  int32 ventana_minutos = 2;   // 0 = 15
+}
+
+message ContarIntentosResponse {
+  int32 fallidos = 1;
+}
+
+message EventoSeguridad {
+  string tipo = 1;                 // REGISTRO | CAMBIO_PASSWORD | RECUPERACION_SOLICITADA |
+                                   // RECUPERACION_COMPLETADA | CIERRE_SESION | CIERRE_TODAS_SESIONES |
+                                   // CUENTA_EXTERNA_VINCULADA | PERFIL_COMPLETADO | AVATAR_ACTUALIZADO |
+                                   // WEBHOOK_FIRMA_INVALIDA | PAGO_MONTO_INCONSISTENTE
+  optional int64 id_usuario = 2;
+  optional string ip = 3;
+  string severidad = 4;            // INFO | ADVERTENCIA | CRITICO
+  optional string detalle = 5;     // JSON
+  optional string fecha = 6;       // ISO 8601; ausente = ahora
+  string origen = 7;               // servicio que lo reporta
+}
+
+message ListarEventosRequest {
+  optional int64 id_usuario = 1;
+  optional string tipo = 2;
+  int32 limite = 3;                // 0 = 50
+}
+
+message ListarEventosResponse {
+  repeated EventoSeguridad eventos = 1;
+}

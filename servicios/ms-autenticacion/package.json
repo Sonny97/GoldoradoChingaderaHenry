@@ -1,0 +1,22 @@
+{
+  "name": "@goldorado/ms-autenticacion",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Microservicio de autenticacion (SQL Server): usuarios, contraseñas, tokens de seguridad y cuentas de Google/Microsoft.",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon --watch src --watch ../../proto --watch ../../paquetes/comun/src --ext js,json,proto src/index.js",
+    "start": "node src/index.js",
+    "db:setup": "node db/setup.js",
+    "test": "node --test",
+    "db:hash": "node db/hash.js"
+  },
+  "dependencies": {
+    "@goldorado/comun": "^1.0.0",
+    "bcryptjs": "^2.4.3",
+    "jose": "^6.2.15",
+    "jsonwebtoken": "^9.0.2",
+    "mssql": "^11.0.1"
+  }
+}

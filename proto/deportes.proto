@@ -1,0 +1,204 @@
+// =============================================================================
+//  ms-deportes  ·  MySQL  ·  puerto gRPC por defecto 50052
+//
+//  La "informacion gruesa" del futbol: paises, regiones, ciudades, estadios,
+//  torneos, temporadas, equipos y sus colores, jugadores, jornadas
+//  (calendario), encuentros, alineaciones y estadisticas.
+//
+//  NO sabe nada de cuotas ni de apuestas: eso es de ms-apuestas, que guarda
+//  el id del encuentro como referencia externa (sin llave foranea entre bases).
+//  El BFF une las dos cosas para armar la tarjeta de partido.
+// =============================================================================
+
+syntax = "proto3";
+
+package goldorado.deportes;
+
+import "comun.proto";
+
+service Deportes {
+  rpc Salud (goldorado.comun.Vacio) returns (goldorado.comun.EstadoSalud);
+
+  rpc ListarTorneos (goldorado.comun.Vacio) returns (ListarTorneosResponse);
+  rpc ListarEquipos (ListarEquiposRequest) returns (ListarEquiposResponse);
+  // Fallo: NOT_FOUND "Equipo no encontrado".
+  rpc ObtenerEquipo (IdRequest) returns (Equipo);
+  rpc ListarJugadores (ListarJugadoresRequest) returns (ListarJugadoresResponse);
+  rpc ListarEstadios (goldorado.comun.Vacio) returns (ListarEstadiosResponse);
+
+  // Orden de relevancia: live, upcoming, finished, canceled; y luego por fecha.
+  rpc ListarEncuentros (ListarEncuentrosRequest) returns (ListarEncuentrosResponse);
+  // destacado DESC y luego relevancia.
+  rpc ListarDestacados (LimiteRequest) returns (ListarEncuentrosResponse);
+  // Fallo: NOT_FOUND "Partido no encontrado". Lo usa ms-apuestas para validar
+  // el estado del partido antes de aceptar una apuesta.
+  rpc ObtenerEncuentro (IdRequest) returns (Encuentro);
+  // Encuentro + estadistica de equipos + alineaciones.
+  rpc ObtenerDetalleEncuentro (IdRequest) returns (DetalleEncuentro);
+  // Para hidratar el historial de apuestas (equipos, estado, fecha) de una vez.
+  // Los ids que no existan simplemente no vienen.
+  rpc ObtenerEncuentrosPorIds (IdsRequest) returns (ListarEncuentrosResponse);
+  // Jornadas con sus encuentros (el "calendario").
+  rpc ListarCalendario (ListarCalendarioRequest) returns (ListarCalendarioResponse);
+}
+
+message IdRequest {
+  int64 id = 1;
+}
+
+message IdsRequest {
+  repeated int64 ids = 1;
+}
+
+message LimiteRequest {
+  int32 limite = 1;   // 0 = valor por defecto del servicio (4)
+}
+
+message Colores {
+  string primario = 1;     // '#123a8f'
+  string secundario = 2;
+}
+
+message Torneo {
+  int32 id = 1;
+  string nombre = 2;
+  string pais = 3;         // COALESCE(pais, confederacion): 'Colombia' o 'CONMEBOL'
+  string temporada = 4;    // etiqueta de la temporada vigente: '2026-II'
+  string acento = 5;       // '#e7c566'
+}
+
+message ListarTorneosResponse {
+  repeated Torneo torneos = 1;
+}
+
+message Equipo {
+  int32 id = 1;
+  string nombre = 2;
+  string codigo_corto = 3;         // 'MIL' (lo dibuja el escudo)
+  string ciudad = 4;
+  int32 id_torneo = 5;
+  int32 crest_seed = 6;            // 0|1|2 patron del escudo generado
+  Colores colores = 7;
+  optional string fundacion = 8;   // YYYY-MM-DD
+  Torneo torneo = 9;               // viene en ListarEquipos y ObtenerEquipo
+}
+
+message ListarEquiposRequest {
+  optional int32 id_torneo = 1;
+}
+
+message ListarEquiposResponse {
+  repeated Equipo equipos = 1;
+}
+
+message Jugador {
+  int32 id = 1;
+  int32 id_equipo = 2;
+  string nombres = 3;
+  string apellidos = 4;
+  string posicion = 5;               // PORTERO | DEFENSA | MEDIOCAMPISTA | DELANTERO
+  optional int32 dorsal = 6;
+  string fecha_nacimiento = 7;       // YYYY-MM-DD
+  optional string pais_nacimiento = 8;
+  bool activo = 9;
+  string equipo = 10;                // nombre del equipo
+}
+
+message ListarJugadoresRequest {
+  optional int32 id_equipo = 1;
+}
+
+message ListarJugadoresResponse {
+  repeated Jugador jugadores = 1;
+}
+
+message Estadio {
+  int32 id = 1;
+  string nombre = 2;
+  string ciudad = 3;
+  string pais = 4;
+  optional int32 capacidad = 5;
+}
+
+message ListarEstadiosResponse {
+  repeated Estadio estadios = 1;
+}
+
+message Encuentro {
+  int64 id = 1;
+  int32 id_torneo = 2;
+  string estado = 3;                 // live | upcoming | finished | canceled
+  optional int32 minuto = 4;         // solo si estado = live
+  string fecha_hora = 5;             // kickoff, ISO 8601 UTC
+  optional string estadio = 6;
+  optional string arbitro = 7;
+  bool destacado = 8;
+  Equipo local = 9;                  // sin `torneo` embebido (ya viene abajo)
+  Equipo visitante = 10;
+  optional int32 goles_local = 11;   // ausente = todavia no hay marcador
+  optional int32 goles_visitante = 12;
+  Torneo torneo = 13;
+  int32 numero_jornada = 14;
+}
+
+message ListarEncuentrosRequest {
+  string estado = 1;              // '' o 'all' = todos; si no es un estado valido -> lista vacia
+  optional int32 id_torneo = 2;
+  optional int32 id_equipo = 3;   // como local o como visitante
+  optional int32 limite = 4;
+}
+
+message ListarEncuentrosResponse {
+  repeated Encuentro encuentros = 1;
+}
+
+// Un par local/visitante. Cada lado puede no estar registrado.
+message ParEstadistica {
+  optional double local = 1;
+  optional double visitante = 2;
+}
+
+message EstadisticaEquipos {
+  ParEstadistica posesion = 1;
+  ParEstadistica tiros = 2;
+  ParEstadistica tiros_arco = 3;
+  ParEstadistica faltas = 4;
+  ParEstadistica corners = 5;
+}
+
+message JugadorAlineado {
+  int32 id = 1;
+  int32 id_equipo = 2;
+  string nombre = 3;              // 'Santiago Bermúdez'
+  optional int32 dorsal = 4;
+  string posicion = 5;
+  bool titular = 6;
+  int32 goles = 7;
+  int32 asistencias = 8;
+  optional int32 minutos = 9;
+}
+
+message DetalleEncuentro {
+  Encuentro encuentro = 1;
+  EstadisticaEquipos estadisticas = 2;   // ausente si el partido no tiene estadistica
+  repeated JugadorAlineado alineacion = 3;
+}
+
+message ListarCalendarioRequest {
+  optional int32 id_torneo = 1;
+  optional int32 numero_jornada = 2;
+}
+
+message JornadaCalendario {
+  int32 id_jornada = 1;
+  int32 numero = 2;
+  string fecha_inicio = 3;   // YYYY-MM-DD
+  string fecha_fin = 4;
+  Torneo torneo = 5;
+  string temporada = 6;
+  repeated Encuentro encuentros = 7;
+}
+
+message ListarCalendarioResponse {
+  repeated JornadaCalendario jornadas = 1;
+}

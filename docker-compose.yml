@@ -1,0 +1,99 @@
+# ==============================================================================
+#  GolDorado - bases de datos LOCALES para desarrollo
+#
+#    docker compose up -d          levanta las cuatro bases
+#    docker compose down           las apaga (los datos quedan en los volumenes)
+#    docker compose down -v        las apaga Y BORRA los datos
+#
+#  Solo infraestructura: los microservicios se corren con `npm run dev` desde la
+#  raiz del monorepo, igual que el monolito.
+#
+#  Firebase (Firestore) y Google Drive son servicios en la nube y no tienen
+#  imagen oficial: ver docs/INSTALACION.md (o los modos PAGOS_ALMACEN=memoria e
+#  IMAGENES_ALMACEN=local para desarrollar sin nube).
+#
+#  PUERTOS: si en la maquina ya hay un SQL Server o un PostgreSQL instalados,
+#  chocan con 1433 / 5432. Por eso PostgreSQL se publica en el 5433 y SQL
+#  Server en el 1434: en el .env del servicio se pone ese puerto.
+#  Las claves de abajo son de DESARROLLO; nunca se usan en un servidor real.
+# ==============================================================================
+
+name: goldorado
+
+services:
+  # ---------------------------------------------------- ms-autenticacion
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: goldorado-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+      MSSQL_SA_PASSWORD: "GolDorado_Sa_2026!"
+    ports:
+      - "1434:1433"
+    volumes:
+      - sqlserver_datos:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -Q \"SELECT 1\" || exit 1"]
+      interval: 10s
+      retries: 10
+
+  # --------------------------------------------------------- ms-deportes
+  mysql:
+    image: mysql:8.4
+    container_name: goldorado-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "GolDorado_Root_2026!"
+      MYSQL_DATABASE: goldorado_deportes
+      MYSQL_USER: goldorado_app
+      MYSQL_PASSWORD: "GolDorado_App_2026!"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_datos:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pGolDorado_Root_2026!"]
+      interval: 10s
+      retries: 10
+
+  # --------------------------------------------------------- ms-apuestas
+  # En produccion esta base vive en Azure Database for PostgreSQL (Flexible
+  # Server). Localmente es un PostgreSQL normal: el codigo no cambia, solo el
+  # .env (PG_HOST, PG_SSL=true).
+  postgres:
+    image: postgres:17
+    container_name: goldorado-postgres
+    environment:
+      POSTGRES_USER: goldorado_app
+      POSTGRES_PASSWORD: "GolDorado_App_2026!"
+      POSTGRES_DB: goldorado_apuestas
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_datos:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U goldorado_app -d goldorado_apuestas"]
+      interval: 10s
+      retries: 10
+
+  # ---------------------------------------------------- ms-transacciones
+  mongo:
+    image: mongo:8
+    container_name: goldorado-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_datos:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      retries: 10
+
+volumes:
+  sqlserver_datos:
+  mysql_datos:
+  postgres_datos:
+  mongo_datos:

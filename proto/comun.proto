@@ -1,0 +1,43 @@
+// =============================================================================
+//  GolDorado - Tipos compartidos por todos los contratos gRPC.
+//
+//  CONVENCIONES DE TODOS LOS .proto DE ESTA CARPETA
+//   - Nombres de campo en snake_case (estandar de protobuf). @grpc/proto-loader
+//     se carga con keepCase:false, asi que en JavaScript llegan en camelCase:
+//     id_usuario -> idUsuario.
+//   - int64 se carga con longs:Number. Ningun id de este sistema se acerca a
+//     2^53, asi que el numero de JavaScript lo representa sin perdida.
+//   - Fechas como string ISO 8601 (UTC). Es lo mismo que ya consumia el
+//     frontend en el proyecto monolitico, y evita convertir
+//     google.protobuf.Timestamp en cada borde.
+//   - Dinero como double en PESOS COLOMBIANOS SIN CENTAVOS. Todo monto del
+//     negocio es un entero (las apuestas exigen pesos enteros) y un double
+//     representa exactamente cualquier entero hasta 9 x 10^15. Las bases
+//     siguen guardando DECIMAL/NUMERIC: el double es solo el formato de viaje.
+//   - `optional` marca los campos que pueden NO VENIR (presencia explicita).
+//     Un partido que no ha empezado no tiene goles: no es lo mismo que 0 goles.
+//   - Los ERRORES no viajan en la respuesta: se devuelven como estado gRPC
+//     (NOT_FOUND, ALREADY_EXISTS, FAILED_PRECONDITION...) con un mensaje en
+//     español listo para mostrar. Si el error trae datos extra (por ejemplo
+//     {"tokenDead":true}), van en el metadato de cierre `x-datos` como JSON.
+// =============================================================================
+
+syntax = "proto3";
+
+package goldorado.comun;
+
+// Peticion o respuesta sin contenido.
+message Vacio {}
+
+// Respuesta del RPC `Salud` que expone CADA microservicio. El BFF los consulta
+// todos para armar GET /api/salud.
+message EstadoSalud {
+  string servicio = 1;          // 'ms-autenticacion'
+  string estado = 2;            // 'ok' | 'degradado' | 'error'
+  string motor = 3;             // 'SQL Server' | 'MySQL' | 'PostgreSQL' | 'MongoDB' | 'Firestore' | 'Google Drive'
+  string base_datos = 4;        // nombre de la base, proyecto o carpeta
+  string detalle = 5;           // por que no esta 'ok' (vacio si todo bien)
+  string version = 6;           // version del servicio (package.json)
+  double tiempo_activo_seg = 7; // segundos desde que arranco el proceso
+  string modo = 8;              // modo de almacenamiento: 'sqlserver', 'memoria', 'local', 'drive', 'simulado'...
+}

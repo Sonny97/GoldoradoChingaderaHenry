@@ -1,0 +1,275 @@
+/* ========================================================================
+   profile.css - Perfil, foto, cuentas externas (Google / Microsoft),
+   callback de OAuth y enlaces reales del menu de usuario.
+   Solo tokens de variables.css.
+   ======================================================================== */
+
+/* ================================================================ Avatar */
+
+/* Con foto el degradado dorado queda solo como anillo: el anillo navy+dorado
+   del avatar de iniciales se conserva tal cual via box-shadow. */
+.gd-avatar--photo {
+  overflow: hidden;
+  background: var(--gd-surface-3);
+}
+
+.gd-avatar__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+/* ================================================== Menu de usuario: links */
+
+/* Mismo aspecto que los <button> del panel (layout.css): ahora son <Link>. */
+.gd-user-menu__link {
+  display: flex;
+  align-items: center;
+  gap: var(--gd-sp-3);
+  width: 100%;
+  padding: var(--gd-sp-3);
+  border-radius: var(--gd-r-sm);
+  color: var(--gd-text-soft);
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-medium);
+  text-decoration: none;
+  transition: var(--gd-tr-base);
+}
+
+.gd-user-menu__link:hover,
+.gd-user-menu__link:focus-visible {
+  background: rgba(231, 197, 102, 0.1);
+  color: var(--gd-gold-300);
+}
+
+.gd-user-menu__link:focus-visible {
+  outline: none;
+  box-shadow: var(--gd-ring);
+}
+
+/* ==================================================== Entrada con terceros */
+
+.gd-social-login {
+  display: grid;
+  gap: var(--gd-sp-3);
+  margin-bottom: var(--gd-sp-4);
+}
+
+.gd-social-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gd-sp-3);
+  width: 100%;
+  padding: 13px var(--gd-sp-5);
+  background: var(--gd-surface-2);
+  border: 1px solid var(--gd-border-strong);
+  border-radius: var(--gd-r-md);
+  color: var(--gd-text);
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-semibold);
+  transition: var(--gd-tr-base);
+}
+
+.gd-social-btn:hover:not(:disabled) {
+  border-color: var(--gd-border-gold);
+  background: var(--gd-surface-3);
+}
+
+.gd-social-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--gd-ring);
+}
+
+.gd-social-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Los logos de marca conservan sus colores: no heredan currentColor. */
+.gd-icon--brand {
+  flex: 0 0 auto;
+}
+
+/* ===================================================== Callback de OAuth */
+
+.gd-callback__state {
+  display: grid;
+  justify-items: center;
+  gap: var(--gd-sp-3);
+  text-align: center;
+}
+
+.gd-callback__actions {
+  margin-top: var(--gd-sp-4);
+}
+
+.gd-complete__email {
+  margin-bottom: var(--gd-sp-4);
+}
+
+/* ================================================================ Perfil */
+
+.gd-profile__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: var(--gd-sp-5);
+  align-items: start;
+}
+
+.gd-profile__card {
+  display: grid;
+  gap: var(--gd-sp-4);
+  min-width: 0;
+}
+
+.gd-profile__card--avatar {
+  grid-row: span 2;
+  justify-items: center;
+  text-align: center;
+}
+
+.gd-profile__avatar-wrap {
+  padding: var(--gd-sp-2);
+}
+
+.gd-profile__identity {
+  display: grid;
+  gap: var(--gd-sp-1);
+  min-width: 0;
+}
+
+.gd-profile__name {
+  font-size: var(--gd-fz-xl);
+  font-weight: var(--gd-fw-bold);
+  color: var(--gd-text);
+}
+
+.gd-profile__email {
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.gd-profile__avatar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--gd-sp-2);
+}
+
+.gd-profile__file-btn {
+  cursor: pointer;
+}
+
+/* El input file oculto recibe el foco; el label que lo dispara lo muestra. */
+.gd-sr-only:focus-visible + .gd-profile__avatar-actions .gd-profile__file-btn {
+  box-shadow: var(--gd-ring);
+}
+
+.gd-profile__hint {
+  margin: 0;
+  font-size: var(--gd-fz-xs);
+  color: var(--gd-text-dim);
+}
+
+.gd-profile__card-title {
+  font-size: var(--gd-fz-lg);
+  font-weight: var(--gd-fw-bold);
+  color: var(--gd-text);
+}
+
+.gd-profile__text {
+  margin: 0;
+  font-size: var(--gd-fz-sm);
+  line-height: var(--gd-lh-normal);
+  color: var(--gd-text-muted);
+}
+
+.gd-profile__form {
+  display: grid;
+  gap: var(--gd-sp-4);
+}
+
+.gd-profile__readonly {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gd-sp-3);
+  margin: 0;
+  padding: var(--gd-sp-4);
+  background: var(--gd-surface-2);
+  border: 1px solid var(--gd-border-soft);
+  border-radius: var(--gd-r-md);
+}
+
+.gd-profile__readonly div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gd-profile__readonly dt {
+  font-size: var(--gd-fz-2xs);
+  letter-spacing: var(--gd-ls-wide);
+  text-transform: uppercase;
+  color: var(--gd-text-dim);
+}
+
+.gd-profile__readonly dd {
+  margin: 0;
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-soft);
+  overflow-wrap: anywhere;
+}
+
+.gd-profile__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.gd-profile__providers {
+  display: grid;
+  gap: var(--gd-sp-2);
+  list-style: none;
+}
+
+.gd-profile__provider {
+  display: flex;
+  align-items: center;
+  gap: var(--gd-sp-3);
+  padding: var(--gd-sp-3);
+  background: var(--gd-surface-2);
+  border: 1px solid var(--gd-border-soft);
+  border-radius: var(--gd-r-md);
+}
+
+.gd-profile__provider-name {
+  flex: 1;
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-semibold);
+  color: var(--gd-text);
+}
+
+/* ============================================================ Responsive */
+
+@media (max-width: 900px) {
+  .gd-profile__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gd-profile__card--avatar {
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .gd-profile__readonly {
+    grid-template-columns: 1fr;
+  }
+
+  .gd-profile__actions .gd-btn {
+    width: 100%;
+  }
+}

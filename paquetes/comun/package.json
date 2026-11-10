@@ -1,0 +1,20 @@
+{
+  "name": "@goldorado/comun",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Utilidades compartidas por los microservicios y el BFF: env, logger, errores, servidor y cliente gRPC, salud.",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./pruebas": "./src/pruebas.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.7",
+    "@grpc/proto-loader": "^0.8.1",
+    "dotenv": "^16.4.7"
+  }
+}

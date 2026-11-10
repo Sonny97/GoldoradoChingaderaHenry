@@ -1,0 +1,28 @@
+/* ========================================================================
+   index.css - Unico punto de entrada de estilos de GolDorado.
+   Lo importa main.jsx una sola vez; ningun componente importa CSS.
+
+   El orden de esta lista ES la cascada. No reordenar sin pensarlo:
+     reset      -> normaliza el navegador
+     variables  -> define los tokens que todo lo de abajo consume
+     base       -> elementos HTML pelados y foco
+     motion     -> keyframes, que las features referencian
+     utilities  -> helpers genericos
+     layout/ui/features -> especificidad creciente
+     wallet/bets/profile -> pantallas de los microservicios, al final para
+                            poder extender (no reescribir) lo de arriba
+   ======================================================================== */
+
+@import './reset.css';
+@import './variables.css';
+@import './base.css';
+@import './motion.css';
+@import './utilities.css';
+@import './layout.css';
+@import './ui.css';
+@import './home.css';
+@import './dashboard.css';
+@import './auth.css';
+@import './wallet.css';
+@import './bets.css';
+@import './profile.css';

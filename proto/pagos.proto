@@ -1,0 +1,149 @@
+// =============================================================================
+//  ms-pagos  ·  Firebase (Cloud Firestore) + pasarela Wompi  ·  puerto 50055
+//
+//  Recargas de saldo con Wompi:
+//   - PSE por API: el usuario elige su banco en NUESTRA pantalla y se le
+//     redirige al banco (payment_method.extra.async_payment_url).
+//   - Web Checkout de Wompi: pagina alojada por Wompi con todos sus medios
+//     (tarjeta, Nequi, PSE, Bancolombia...).
+//
+//  Firestore guarda cada pago (coleccion `pagos`, id = referencia) y su
+//  historial de eventos. Cuando Wompi confirma APPROVED, este servicio le pide
+//  a ms-apuestas que acredite el saldo (idempotente por referencia) y le
+//  reporta el movimiento a ms-transacciones.
+//
+//  NUNCA se confia en lo que diga el navegador sobre el resultado del pago: el
+//  estado se lee de la API de Wompi (con la llave privada) o de un evento cuya
+//  firma (checksum) se verifico con el secreto de eventos.
+// =============================================================================
+
+syntax = "proto3";
+
+package goldorado.pagos;
+
+import "comun.proto";
+
+service Pagos {
+  rpc Salud (goldorado.comun.Vacio) returns (goldorado.comun.EstadoSalud);
+
+  // Lo que el frontend necesita para pintar la pantalla de recarga.
+  rpc ObtenerConfiguracion (goldorado.comun.Vacio) returns (ConfiguracionPagos);
+  // Bancos PSE (GET /v1/pse/financial_institutions de Wompi, con cache).
+  rpc ListarBancosPse (goldorado.comun.Vacio) returns (ListarBancosResponse);
+  // Crea la transaccion PSE en Wompi y espera unos segundos a que Wompi
+  // entregue la URL del banco. Si no alcanza a llegar, el pago vuelve sin
+  // url_pago y el frontend sigue consultando con ConsultarPago.
+  // Fallos: INVALID_ARGUMENT (monto/datos), UNAVAILABLE (Wompi no responde).
+  rpc CrearPagoPse (CrearPagoPseRequest) returns (Pago);
+  // Firma la integridad y arma la URL del Web Checkout de Wompi.
+  rpc CrearPagoCheckout (CrearPagoCheckoutRequest) returns (Pago);
+  // Refresca el estado contra Wompi y, si quedo APPROVED, acredita (una vez).
+  // Por referencia propia o por id de transaccion de Wompi (el que llega en
+  // ?id= cuando el usuario vuelve del checkout).
+  // Fallo: NOT_FOUND, PERMISSION_DENIED (el pago es de otro usuario).
+  rpc ConsultarPago (ConsultarPagoRequest) returns (Pago);
+  rpc ListarPagos (ListarPagosRequest) returns (ListarPagosResponse);
+  // Evento de Wompi (webhook) tal como llego. Verifica el checksum.
+  // Fallo: UNAUTHENTICATED si la firma no coincide.
+  rpc ProcesarEventoWompi (EventoWompiRequest) returns (ProcesarEventoResponse);
+}
+
+message ConfiguracionPagos {
+  string modo = 1;                      // 'sandbox' | 'produccion' | 'simulado'
+  string llave_publica = 2;             // pub_test_... (es publica: puede ir al navegador)
+  string moneda = 3;                    // 'COP'
+  double monto_minimo = 4;              // pesos (Wompi exige minimo $1.500)
+  double monto_maximo = 5;
+  repeated string metodos = 6;          // ['PSE', 'CHECKOUT']
+  repeated double montos_sugeridos = 7; // [20000, 50000, 100000, 200000]
+  // Contratos que el usuario DEBE aceptar con una casilla cada uno antes de
+  // pagar por API (Habeas Data). Son los `permalink` que devuelve
+  // GET /v1/merchants/info de Wompi; vacios en modo simulado o si Wompi no responde.
+  string url_reglamento = 8;            // presigned_acceptance.permalink
+  string url_datos_personales = 9;      // presigned_personal_data_auth.permalink
+}
+
+message BancoPse {
+  string codigo = 1;   // financial_institution_code
+  string nombre = 2;
+}
+
+message ListarBancosResponse {
+  repeated BancoPse bancos = 1;
+}
+
+// Datos del pagador. El BFF los toma del PERFIL del usuario (ms-autenticacion)
+// y del formulario; nunca del token de otra persona.
+message Pagador {
+  string email = 1;
+  string nombre_completo = 2;
+  string telefono = 3;
+  string tipo_documento = 4;     // CC | CE | NIT | PP | TI ...
+  string numero_documento = 5;
+}
+
+message CrearPagoPseRequest {
+  int64 id_usuario = 1;
+  double monto = 2;              // pesos enteros
+  string codigo_banco = 3;       // financial_institution_code
+  int32 tipo_persona = 4;        // 0 = natural, 1 = juridica (user_type de Wompi)
+  Pagador pagador = 5;
+  string url_retorno = 6;        // pagina del frontend a la que vuelve el usuario
+  string ip = 7;
+  // El usuario marco las dos casillas (reglamento de usuarios y autorizacion de
+  // tratamiento de datos personales de Wompi). Si alguna es false:
+  // INVALID_ARGUMENT. Con ellas se piden tokens de aceptacion NUEVOS (son de un
+  // solo uso y vencen en 1 hora).
+  bool acepta_reglamento = 8;
+  bool acepta_datos_personales = 9;
+}
+
+message CrearPagoCheckoutRequest {
+  int64 id_usuario = 1;
+  double monto = 2;
+  Pagador pagador = 3;
+  string url_retorno = 4;
+}
+
+message Pago {
+  string referencia = 1;                   // nuestra: 'GD-<idUsuario>-<epoch>-<aleatorio>'
+  int64 id_usuario = 2;
+  double monto = 3;                        // pesos
+  string moneda = 4;
+  string metodo = 5;                       // 'PSE' | 'CHECKOUT'
+  string estado = 6;                       // PENDIENTE | APROBADO | RECHAZADO | ANULADO | ERROR
+  optional string mensaje_estado = 7;      // status_message de Wompi
+  optional string id_transaccion_wompi = 8;
+  optional string url_pago = 9;            // a donde redirigir al usuario (banco o checkout)
+  bool acreditado = 10;                    // el saldo ya se sumo en ms-apuestas
+  string creado_en = 11;
+  string actualizado_en = 12;
+  optional string banco = 13;              // nombre del banco PSE
+  optional string medio_wompi = 14;        // payment_method_type que reporto Wompi
+}
+
+message ConsultarPagoRequest {
+  optional string referencia = 1;
+  optional string id_transaccion_wompi = 2;
+  int64 id_usuario = 3;                    // dueño esperado; 0 = consulta del sistema
+}
+
+message ListarPagosRequest {
+  int64 id_usuario = 1;
+  int32 limite = 2;                        // 0 = 20
+}
+
+message ListarPagosResponse {
+  repeated Pago pagos = 1;
+}
+
+message EventoWompiRequest {
+  string cuerpo_json = 1;         // el body del webhook, sin tocar
+  string checksum_cabecera = 2;   // cabecera X-Event-Checksum (si vino)
+}
+
+message ProcesarEventoResponse {
+  bool aceptado = 1;
+  string referencia = 2;
+  string estado = 3;
+}

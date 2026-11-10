@@ -1,0 +1,80 @@
+// =============================================================================
+//  ms-imagenes  ·  Google Drive  ·  puerto gRPC por defecto 50056
+//
+//  TODAS las imagenes de la plataforma: escudos de equipos, fotos de
+//  jugadores y estadios, banners de promociones y fotos de perfil.
+//
+//  Drive hace de "base de datos" de las imagenes: cada archivo lleva en sus
+//  appProperties a que entidad pertenece (entidad = 'equipo', id_entidad = '5'),
+//  y las busquedas son consultas `q` de la API de Drive. El servicio mantiene
+//  un indice en memoria (entidad+id -> archivo) para no consultar Drive en cada
+//  peticion de la home.
+//
+//  Modo local: si no hay credenciales de Google, guarda en disco (carpeta
+//  storage/) con la misma interfaz, para poder desarrollar sin Drive.
+// =============================================================================
+
+syntax = "proto3";
+
+package goldorado.imagenes;
+
+import "comun.proto";
+
+service Imagenes {
+  rpc Salud (goldorado.comun.Vacio) returns (goldorado.comun.EstadoSalud);
+
+  // Unario: las imagenes estan limitadas a 5 MB y el canal gRPC se configura
+  // para mensajes de hasta 8 MB. Fallo: INVALID_ARGUMENT (tipo o tamaño).
+  rpc SubirImagen (SubirImagenRequest) returns (Imagen);
+  // STREAMING DE SERVIDOR: primero un FragmentoImagen con `metadatos` y luego
+  // los bytes en trozos de 64 KB. Asi el BFF puede ir enviando la imagen al
+  // navegador sin cargarla completa en memoria. Fallo: NOT_FOUND.
+  rpc ObtenerImagen (IdImagenRequest) returns (stream FragmentoImagen);
+  rpc ObtenerMetadatos (IdImagenRequest) returns (Imagen);
+  // La imagen VIGENTE de cada entidad pedida (la mas reciente).
+  rpc BuscarImagenes (BuscarImagenesRequest) returns (BuscarImagenesResponse);
+  // Fallo: NOT_FOUND.
+  rpc EliminarImagen (IdImagenRequest) returns (goldorado.comun.Vacio);
+}
+
+message Imagen {
+  string id = 1;                    // id del archivo en Drive (o en el almacen local)
+  string nombre = 2;
+  string tipo_mime = 3;             // image/png | image/jpeg | image/webp | image/svg+xml
+  int64 tamano_bytes = 4;
+  string entidad = 5;               // equipo | jugador | estadio | torneo | promocion | usuario
+  string id_entidad = 6;            // '5'
+  string creado_en = 7;             // ISO 8601
+  optional string descripcion = 8;
+}
+
+message SubirImagenRequest {
+  string entidad = 1;
+  string id_entidad = 2;
+  string nombre = 3;                // nombre original del archivo
+  string tipo_mime = 4;
+  bytes contenido = 5;
+  optional string descripcion = 6;
+  bool reemplazar = 7;              // borra la imagen anterior de esa entidad (fotos de perfil)
+  int64 subido_por = 8;             // id del usuario que la sube (auditoria)
+}
+
+message IdImagenRequest {
+  string id = 1;
+}
+
+message FragmentoImagen {
+  oneof dato {
+    Imagen metadatos = 1;   // siempre el PRIMER mensaje del stream
+    bytes trozo = 2;
+  }
+}
+
+message BuscarImagenesRequest {
+  string entidad = 1;
+  repeated string ids_entidad = 2;  // vacio = todas las de esa entidad
+}
+
+message BuscarImagenesResponse {
+  repeated Imagen imagenes = 1;
+}

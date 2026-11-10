@@ -1,0 +1,180 @@
+// =============================================================================
+//  ms-apuestas  ·  PostgreSQL (Azure Database for PostgreSQL)  ·  puerto 50053
+//
+//  El "API" del negocio: mercados, cuotas que publica Goldorado, reglas de
+//  monto, apuestas, la billetera de cada cliente (Cuenta_Saldo) y las
+//  promociones.
+//
+//  La apuesta y el descuento del saldo van en UNA transaccion de PostgreSQL.
+//  El movimiento contable viaja despues a ms-transacciones (MongoDB) por medio
+//  de una bandeja de salida (tabla evento_salida): si Mongo esta caido, la
+//  apuesta no se pierde ni se duplica, solo se registra en el libro un poco
+//  despues.
+// =============================================================================
+
+syntax = "proto3";
+
+package goldorado.apuestas;
+
+import "comun.proto";
+
+service Apuestas {
+  rpc Salud (goldorado.comun.Vacio) returns (goldorado.comun.EstadoSalud);
+
+  // ------------------------------------------------------------------ cuotas
+  // Todas las cuotas de esos encuentros, ordenadas por encuentro y `orden`.
+  rpc CuotasPorEncuentros (CuotasPorEncuentrosRequest) returns (CuotasPorEncuentrosResponse);
+
+  // ---------------------------------------------------------------- apuestas
+  // Valida monto, cuota ABIERTA, estado del partido (preguntandole a
+  // ms-deportes por gRPC) y limites de la regla; luego descuenta el saldo con
+  // la condicion DENTRO del UPDATE.
+  // Fallos: INVALID_ARGUMENT (monto), NOT_FOUND (cuota), FAILED_PRECONDITION
+  // (partido terminado/cancelado, cuota cerrada, fuera de limites, saldo insuficiente).
+  rpc RegistrarApuesta (RegistrarApuestaRequest) returns (ApuestaRegistrada);
+  rpc ListarApuestas (ListarApuestasRequest) returns (ListarApuestasResponse);
+  // Panel "Tu semana".
+  rpc ResumenApuestas (IdUsuarioRequest) returns (ResumenApuestasResponse);
+
+  // --------------------------------------------------------------- billetera
+  // Crea la cuenta en 0 si no existe (INSERT ... ON CONFLICT DO NOTHING).
+  // Se llama al registrarse y antes de cualquier operacion de dinero.
+  rpc AsegurarBilletera (IdUsuarioRequest) returns (Billetera);
+  rpc ObtenerBilletera (IdUsuarioRequest) returns (Billetera);
+  // La llama ms-pagos cuando Wompi aprueba un pago. IDEMPOTENTE por
+  // `referencia`: si el webhook y la consulta llegan los dos, se acredita una vez.
+  rpc AcreditarDeposito (AcreditarDepositoRequest) returns (MovimientoSaldoResponse);
+
+  // ------------------------------------------------------------ promociones
+  // Solo vigentes (fecha_expira >= CURRENT_DATE).
+  rpc ListarPromociones (ListarPromocionesRequest) returns (ListarPromocionesResponse);
+  // La del banner. Fallo: NOT_FOUND "No hay promociones disponibles".
+  rpc PromocionDestacada (goldorado.comun.Vacio) returns (Promocion);
+  // Fallo: NOT_FOUND "Promoción no encontrada".
+  rpc ObtenerPromocion (IdPromocionRequest) returns (Promocion);
+}
+
+message IdUsuarioRequest {
+  int64 id_usuario = 1;
+}
+
+message Cuota {
+  int64 id_cuota = 1;
+  int64 id_encuentro = 2;      // referencia externa a ms-deportes
+  string codigo_corto = 3;     // '1' | 'X' | '2' | 'GG' | 'NG' | 'O25' | 'U25'
+  string seleccion = 4;        // 'Local' | 'Empate' | 'Visita' | 'Ambos' ...
+  double valor = 5;            // cuota decimal europea: 2.00 = duplica lo apostado
+  string mercado = 6;          // '1X2' | 'AMBOS_ANOTAN' | 'OVER_UNDER'
+  string estado = 7;           // ABIERTO | SUSPENDIDO | CERRADO
+  int32 orden = 8;             // posicion del chip en la franja
+}
+
+message CuotasPorEncuentrosRequest {
+  repeated int64 ids_encuentro = 1;
+}
+
+message CuotasPorEncuentrosResponse {
+  repeated Cuota cuotas = 1;
+}
+
+message RegistrarApuestaRequest {
+  int64 id_usuario = 1;   // sale del token (lo pone el BFF), NUNCA del cuerpo HTTP
+  int64 id_cuota = 2;     // se manda el id y el servidor lee el valor vigente
+  double monto = 3;       // pesos enteros
+}
+
+message ApuestaRegistrada {
+  int64 id_apuesta = 1;
+  string id_transaccion = 2;      // UUID de la transaccion en ms-transacciones
+  double monto = 3;
+  double cuota = 4;               // cuota_fijada (snapshot)
+  double ganancia_potencial = 5;  // columna generada monto * cuota
+  string fecha = 6;               // ISO 8601
+  int64 id_encuentro = 7;
+  string seleccion = 8;
+  string mercado = 9;
+  double saldo_disponible = 10;   // saldo despues de apostar
+  double saldo_bloqueado = 11;
+}
+
+message ListarApuestasRequest {
+  int64 id_usuario = 1;
+  int32 limite = 2;   // 0 = 20
+}
+
+message Apuesta {
+  int64 id = 1;
+  string estado = 2;              // PENDIENTE | GANADA | PERDIDA | ANULADA
+  double monto = 3;
+  double cuota = 4;
+  double ganancia_potencial = 5;
+  string fecha = 6;
+  string seleccion = 7;
+  string mercado = 8;
+  int64 id_encuentro = 9;         // el BFF lo hidrata con ms-deportes
+  string id_transaccion = 10;
+}
+
+message ListarApuestasResponse {
+  repeated Apuesta apuestas = 1;
+}
+
+message ResumenApuestasResponse {
+  int32 total = 1;
+  int32 ganadas = 2;
+  int32 perdidas = 3;
+  int32 pendientes = 4;
+  double apostado = 5;
+  double retornado = 6;
+  int32 rendimiento = 7;   // % entero: (retornado - apostado) / apostado * 100
+}
+
+message Billetera {
+  int64 id_usuario = 1;
+  double saldo_disponible = 2;
+  double saldo_bloqueado = 3;   // comprometido en apuestas PENDIENTE
+  string moneda = 4;            // 'COP'
+}
+
+message AcreditarDepositoRequest {
+  int64 id_usuario = 1;
+  double monto = 2;                    // pesos
+  string referencia = 3;               // referencia del pago (GD-...) -> clave de idempotencia
+  string proveedor = 4;                // 'Wompi'
+  string metodo = 5;                   // 'PSE' | 'NEQUI' | 'CARD' | 'BANCOLOMBIA_TRANSFER' ...
+  string id_transaccion_pasarela = 6;  // id de la transaccion en Wompi
+}
+
+message MovimientoSaldoResponse {
+  bool aplicado = 1;         // false = ya se habia acreditado antes (reintento ignorado)
+  Billetera billetera = 2;
+}
+
+message ListarPromocionesRequest {
+  optional int32 limite = 1;
+  bool excluir_destacada = 2;
+}
+
+message IdPromocionRequest {
+  int32 id = 1;
+}
+
+message Promocion {
+  int32 id = 1;
+  string titulo = 2;
+  string subtitulo = 3;
+  string descripcion = 4;
+  string badge = 5;
+  string cta_label = 6;
+  string acento = 7;                 // gold | emerald | violet | crimson
+  bool destacada = 8;
+  string fecha_expira = 9;           // YYYY-MM-DD
+  repeated int32 ids_torneo = 10;    // referencia externa a ms-deportes; el BFF pone los nombres
+  // La imagen de la promocion (si existe) NO se guarda aqui: el BFF la busca en
+  // ms-imagenes por entidad 'promocion' + id. Asi no hay un id de otra base que
+  // mantener sincronizado.
+}
+
+message ListarPromocionesResponse {
+  repeated Promocion promociones = 1;
+}

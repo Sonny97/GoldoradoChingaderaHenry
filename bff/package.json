@@ -1,0 +1,22 @@
+{
+  "name": "@goldorado/bff",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Backend For Frontend: API REST para el frontend web que integra los seis microservicios por gRPC.",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon --watch src --watch ../proto --watch ../paquetes/comun/src --ext js,json,proto src/index.js",
+    "start": "node src/index.js",
+    "test": "node --test",
+    "verificar": "node scripts/verificar.js"
+  },
+  "dependencies": {
+    "@goldorado/comun": "^1.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "multer": "^2.5.0"
+  }
+}

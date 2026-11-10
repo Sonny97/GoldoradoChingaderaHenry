@@ -1,0 +1,949 @@
+/* ========================================================================
+   ui.css - Primitivas de components/ui/
+   ======================================================================== */
+
+.gd-icon {
+  display: block;
+  flex: 0 0 auto;
+}
+
+/* ============================================================== Button */
+
+.gd-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gd-sp-2);
+  border: 1px solid transparent;
+  border-radius: var(--gd-r-md);
+  font-family: var(--gd-font-display);
+  font-weight: var(--gd-fw-semibold);
+  letter-spacing: var(--gd-ls-wide);
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: transform var(--gd-t-base) var(--gd-ease-out),
+    box-shadow var(--gd-t-base) var(--gd-ease-out),
+    background-color var(--gd-t-base) var(--gd-ease-out),
+    border-color var(--gd-t-base) var(--gd-ease-out),
+    color var(--gd-t-base) var(--gd-ease-out);
+}
+
+.gd-btn--sm { padding: 8px 14px;  font-size: var(--gd-fz-sm); }
+.gd-btn--md { padding: 12px 20px; font-size: var(--gd-fz-sm); }
+.gd-btn--lg { padding: 15px 28px; font-size: var(--gd-fz-md); }
+
+.gd-btn--full { width: 100%; }
+.gd-btn--pill { border-radius: var(--gd-r-pill); }
+
+.gd-btn:disabled,
+.gd-btn.is-loading {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* ---- Primario dorado. El degradado + el bisel interior es lo que separa
+        esto de un boton plano #D4AF37, que se ve barato. */
+.gd-btn--gold {
+  background-image: var(--gd-grad-gold);
+  color: var(--gd-on-gold);
+  box-shadow: var(--gd-shadow-sm), var(--gd-inset-top);
+}
+
+.gd-btn--gold:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--gd-shadow-md), var(--gd-glow-gold), var(--gd-inset-top);
+}
+
+.gd-btn--gold:active {
+  transform: translateY(0);
+}
+
+/* Destello de una sola pasada al pasar el mouse. */
+.gd-btn--gold::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gd-btn--gold:hover::after {
+  animation: gd-sheen 900ms var(--gd-ease-out);
+}
+
+/* ---- Contorno */
+.gd-btn--outline {
+  background: transparent;
+  border-color: var(--gd-border-gold);
+  color: var(--gd-gold-300);
+}
+
+.gd-btn--outline:hover {
+  background: rgba(231, 197, 102, 0.09);
+  border-color: var(--gd-gold-500);
+  color: var(--gd-gold-200);
+  transform: translateY(-2px);
+}
+
+/* ---- Fantasma */
+.gd-btn--ghost {
+  background: transparent;
+  border-color: var(--gd-border-soft);
+  color: var(--gd-text-soft);
+}
+
+.gd-btn--ghost:hover {
+  background: rgba(244, 246, 251, 0.06);
+  border-color: var(--gd-border-strong);
+  color: var(--gd-text);
+}
+
+/* ---- Peligro */
+.gd-btn--danger {
+  background: var(--gd-danger-soft);
+  border-color: var(--gd-danger-border);
+  color: var(--gd-danger-text);
+}
+
+.gd-btn--danger:hover {
+  background: rgba(229, 72, 77, 0.2);
+}
+
+/* ================================================================ Card */
+
+.gd-card {
+  position: relative;
+  background-image: var(--gd-grad-surface);
+  border: 1px solid var(--gd-border-soft);
+  border-radius: var(--gd-r-lg);
+  box-shadow: var(--gd-shadow-md), var(--gd-inset-top);
+}
+
+.gd-card--gold {
+  border-color: var(--gd-border-gold);
+}
+
+/* Filo dorado superior: le da el remate de metal a la tarjeta. */
+.gd-card--gold::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background-image: var(--gd-grad-divider);
+  border-radius: inherit;
+}
+
+.gd-card--pad-none { padding: 0; }
+.gd-card--pad-sm   { padding: var(--gd-sp-4); }
+.gd-card--pad-md   { padding: var(--gd-sp-5); }
+.gd-card--pad-lg   { padding: clamp(1.5rem, 1.1rem + 1.6vw, 2.5rem); }
+
+.gd-card--interactive {
+  transition: transform var(--gd-t-slow) var(--gd-ease-out),
+    box-shadow var(--gd-t-slow) var(--gd-ease-out),
+    border-color var(--gd-t-slow) var(--gd-ease-out);
+}
+
+.gd-card--interactive:hover {
+  transform: translateY(-5px);
+  border-color: var(--gd-border-gold);
+  box-shadow: var(--gd-shadow-lg), var(--gd-glow-gold);
+}
+
+/* =============================================================== Badge */
+
+.gd-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gd-sp-2);
+  padding: 5px 10px;
+  border-radius: var(--gd-r-pill);
+  border: 1px solid var(--gd-badge-bd, var(--gd-border-soft));
+  background: var(--gd-badge-bg, rgba(244, 246, 251, 0.05));
+  color: var(--gd-badge-fg, var(--gd-text-muted));
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-2xs);
+  font-weight: var(--gd-fw-bold);
+  letter-spacing: var(--gd-ls-wider);
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.gd-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: 0 0 auto;
+}
+
+.gd-badge--gold {
+  --gd-badge-fg: var(--gd-gold-300);
+  --gd-badge-bg: rgba(231, 197, 102, 0.12);
+  --gd-badge-bd: var(--gd-border-gold);
+}
+
+.gd-badge--live {
+  --gd-badge-fg: var(--gd-danger-text);
+  --gd-badge-bg: var(--gd-danger-soft);
+  --gd-badge-bd: var(--gd-danger-border);
+}
+
+.gd-badge--win {
+  --gd-badge-fg: var(--gd-success);
+  --gd-badge-bg: var(--gd-success-soft);
+  --gd-badge-bd: var(--gd-success-border);
+}
+
+.gd-badge--info {
+  --gd-badge-fg: #93b8ff;
+  --gd-badge-bg: var(--gd-info-soft);
+  --gd-badge-bd: rgba(59, 130, 246, 0.42);
+}
+
+.gd-badge--live .gd-badge__dot {
+  animation: gd-live-pulse 1.7s ease-out infinite;
+}
+
+/* ============================================================= Spinner */
+
+.gd-spinner {
+  display: inline-grid;
+  place-items: center;
+  width: var(--gd-spin-size, 24px);
+  height: var(--gd-spin-size, 24px);
+  color: currentColor;
+}
+
+.gd-spinner svg {
+  width: 100%;
+  height: 100%;
+  animation: gd-spin 1.4s linear infinite;
+}
+
+.gd-spinner__track {
+  stroke: currentColor;
+  opacity: 0.18;
+}
+
+.gd-spinner__head {
+  stroke: currentColor;
+  animation: gd-spin-dash 1.4s var(--gd-ease-in-out) infinite;
+}
+
+/* =============================================================== Field */
+
+.gd-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gd-sp-2);
+}
+
+.gd-field__label {
+  font-size: var(--gd-fz-xs);
+  font-weight: var(--gd-fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--gd-ls-wide);
+  color: var(--gd-text-muted);
+}
+
+.gd-field__req {
+  color: var(--gd-gold-500);
+  margin-left: 2px;
+}
+
+.gd-field__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--gd-surface-3);
+  border: 1px solid var(--gd-border-strong);
+  border-radius: var(--gd-r-md);
+  box-shadow: var(--gd-inset-field);
+  transition: border-color var(--gd-t-base) var(--gd-ease-out),
+    box-shadow var(--gd-t-base) var(--gd-ease-out),
+    background-color var(--gd-t-base) var(--gd-ease-out);
+}
+
+.gd-field__control:focus-within {
+  border-color: var(--gd-gold-500);
+  background: var(--gd-navy-800);
+  box-shadow: var(--gd-inset-field), var(--gd-ring);
+}
+
+.gd-field__icon,
+.gd-field__adornment {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--gd-text-dim);
+  transition: color var(--gd-t-base) var(--gd-ease-out);
+}
+
+.gd-field__icon { padding-inline: var(--gd-sp-4) 0; }
+.gd-field__adornment { padding-inline: 0 var(--gd-sp-2); }
+
+.gd-field__control:focus-within .gd-field__icon {
+  color: var(--gd-gold-500);
+}
+
+.gd-field__input,
+.gd-field__select {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  padding: 14px var(--gd-sp-4);
+  background: transparent;
+  border: 0;
+  color: var(--gd-text);
+  font-size: var(--gd-fz-md);
+  caret-color: var(--gd-gold-500);
+}
+
+.gd-field__input:focus,
+.gd-field__select:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.gd-field__input::placeholder {
+  color: var(--gd-text-dim);
+}
+
+.gd-field__select {
+  appearance: none;
+  cursor: pointer;
+  padding-right: var(--gd-sp-7);
+}
+
+.gd-field__caret {
+  position: absolute;
+  right: var(--gd-sp-4);
+  color: var(--gd-text-dim);
+  pointer-events: none;
+}
+
+/* Boton del ojo. type="button" en el JSX es obligatorio o envia el form. */
+.gd-field__adornment-btn {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--gd-r-sm);
+  color: var(--gd-text-dim);
+  transition: color var(--gd-t-base) var(--gd-ease-out),
+    background-color var(--gd-t-base) var(--gd-ease-out);
+}
+
+.gd-field__adornment-btn:hover {
+  color: var(--gd-gold-400);
+  background: rgba(231, 197, 102, 0.1);
+}
+
+.gd-field.is-invalid .gd-field__control {
+  border-color: var(--gd-danger);
+}
+
+.gd-field.is-invalid .gd-field__icon {
+  color: var(--gd-danger-text);
+}
+
+.gd-field__error {
+  display: flex;
+  align-items: center;
+  gap: var(--gd-sp-2);
+  font-size: var(--gd-fz-xs);
+  color: var(--gd-danger-text);
+}
+
+.gd-field__hint {
+  font-size: var(--gd-fz-xs);
+  color: var(--gd-text-dim);
+}
+
+/* ============================================================== Alert */
+
+.gd-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gd-sp-3);
+  padding: var(--gd-sp-3) var(--gd-sp-4);
+  border-radius: var(--gd-r-md);
+  border: 1px solid var(--gd-alert-bd);
+  background: var(--gd-alert-bg);
+  color: var(--gd-alert-fg);
+  font-size: var(--gd-fz-sm);
+  line-height: 1.5;
+}
+
+.gd-alert--error {
+  --gd-alert-bd: var(--gd-danger-border);
+  --gd-alert-bg: var(--gd-danger-soft);
+  --gd-alert-fg: var(--gd-danger-text);
+}
+
+.gd-alert--success {
+  --gd-alert-bd: var(--gd-success-border);
+  --gd-alert-bg: var(--gd-success-soft);
+  --gd-alert-fg: var(--gd-success);
+}
+
+.gd-alert--info {
+  --gd-alert-bd: rgba(59, 130, 246, 0.42);
+  --gd-alert-bg: var(--gd-info-soft);
+  --gd-alert-fg: #93b8ff;
+}
+
+.gd-alert--gold {
+  --gd-alert-bd: var(--gd-border-gold);
+  --gd-alert-bg: rgba(231, 197, 102, 0.1);
+  --gd-alert-fg: var(--gd-gold-300);
+}
+
+.gd-alert__icon { margin-top: 2px; }
+
+/* ============================================================ RadioCard */
+
+.gd-radio-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--gd-sp-4);
+  width: 100%;
+  padding: var(--gd-sp-4);
+  text-align: left;
+  background: var(--gd-surface-2);
+  border: 1px solid var(--gd-border-strong);
+  border-radius: var(--gd-r-md);
+  color: var(--gd-text);
+  transition: var(--gd-tr-base);
+}
+
+.gd-radio-card:hover {
+  border-color: var(--gd-border-gold);
+  background: var(--gd-surface-3);
+}
+
+.gd-radio-card.is-selected {
+  border-color: var(--gd-gold-500);
+  background: rgba(231, 197, 102, 0.08);
+  box-shadow: var(--gd-glow-gold);
+}
+
+.gd-radio-card__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  border-radius: var(--gd-r-sm);
+  border: 1px solid var(--gd-border-soft);
+  background: var(--gd-navy-900);
+  color: var(--gd-text-muted);
+  transition: var(--gd-tr-base);
+}
+
+.gd-radio-card.is-selected .gd-radio-card__icon {
+  border-color: var(--gd-border-gold);
+  color: var(--gd-gold-400);
+}
+
+.gd-radio-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gd-radio-card__title {
+  display: block;
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-semibold);
+}
+
+.gd-radio-card__desc {
+  display: block;
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-muted);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.gd-radio-card.is-selected .gd-radio-card__desc {
+  color: var(--gd-gold-300);
+}
+
+.gd-radio-card__mark {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 2px solid var(--gd-border-strong);
+  transition: var(--gd-tr-base);
+}
+
+.gd-radio-card.is-selected .gd-radio-card__mark {
+  border-color: var(--gd-gold-500);
+}
+
+.gd-radio-card.is-selected .gd-radio-card__mark::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background-image: var(--gd-grad-gold);
+}
+
+/* ===================================================== PasswordStrength */
+
+.gd-pwd {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gd-sp-2);
+  /* Reserva el alto: sin esto la grilla del registro salta en la
+     primera tecla que el usuario escribe. */
+  min-height: 34px;
+}
+
+.gd-pwd__bars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.gd-pwd__bar {
+  position: relative;
+  height: 4px;
+  border-radius: var(--gd-r-pill);
+  background: rgba(169, 180, 204, 0.2);
+  overflow: hidden;
+}
+
+.gd-pwd__bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--gd-pwd-color, transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--gd-t-slow) var(--gd-ease-out);
+  transition-delay: calc(var(--i) * 60ms);
+}
+
+.gd-pwd__bar.is-on::after {
+  transform: scaleX(1);
+}
+
+.gd-pwd__label {
+  font-size: var(--gd-fz-xs);
+  font-weight: var(--gd-fw-medium);
+  color: var(--gd-pwd-color, var(--gd-text-dim));
+}
+
+/* Rojo -> ambar -> dorado -> esmeralda. El nivel "buena" cae en el sucesor
+   del color de marca, asi el dorado nunca significa "mediocre". */
+.gd-pwd--1 { --gd-pwd-color: var(--gd-danger); }
+.gd-pwd--2 { --gd-pwd-color: var(--gd-warning); }
+.gd-pwd--3 { --gd-pwd-color: var(--gd-gold-500); }
+.gd-pwd--4 { --gd-pwd-color: var(--gd-success); }
+
+/* ============================================================ OtpInput */
+
+.gd-otp-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gd-sp-3);
+}
+
+.gd-otp {
+  display: grid;
+  grid-template-columns: repeat(var(--gd-otp-len, 6), 1fr);
+  gap: var(--gd-sp-2);
+}
+
+.gd-otp__box {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  max-height: 64px;
+  padding: 0;
+  text-align: center;
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-2xl);
+  font-weight: var(--gd-fw-bold);
+  color: var(--gd-text);
+  background: var(--gd-surface-3);
+  border: 1px solid var(--gd-border-strong);
+  border-radius: var(--gd-r-md);
+  caret-color: var(--gd-gold-500);
+  box-shadow: var(--gd-inset-field);
+  transition: var(--gd-tr-base);
+}
+
+.gd-otp__box:focus {
+  outline: none;
+  border-color: var(--gd-gold-500);
+  background: var(--gd-navy-800);
+  box-shadow: var(--gd-inset-field), var(--gd-ring);
+  transform: translateY(-2px);
+}
+
+.gd-otp__box.is-filled {
+  border-color: var(--gd-border-gold);
+  color: var(--gd-gold-300);
+}
+
+.gd-otp-wrap.is-invalid .gd-otp__box {
+  border-color: var(--gd-danger);
+}
+
+.gd-otp-wrap.is-invalid .gd-otp {
+  animation: gd-shake 420ms var(--gd-ease-out);
+}
+
+.gd-otp__error {
+  font-size: var(--gd-fz-xs);
+  color: var(--gd-danger-text);
+  text-align: center;
+}
+
+/* ======================================================= StepIndicator */
+
+.gd-steps {
+  display: flex;
+  margin: 0 0 var(--gd-sp-6);
+  padding: 0;
+  list-style: none;
+}
+
+.gd-steps__item {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gd-sp-2);
+}
+
+.gd-steps__item::before {
+  content: '';
+  position: absolute;
+  top: 13px;
+  left: -50%;
+  width: 100%;
+  height: 2px;
+  background: var(--gd-border-strong);
+  z-index: 0;
+}
+
+.gd-steps__item:first-child::before {
+  display: none;
+}
+
+.gd-steps__item.is-done::before,
+.gd-steps__item.is-current::before {
+  background-image: var(--gd-grad-gold);
+}
+
+.gd-steps__dot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gd-surface-2);
+  border: 2px solid var(--gd-border-strong);
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-xs);
+  font-weight: var(--gd-fw-bold);
+  color: var(--gd-text-dim);
+  transition: var(--gd-tr-base);
+}
+
+.gd-steps__item.is-current .gd-steps__dot {
+  border-color: var(--gd-gold-500);
+  color: var(--gd-gold-400);
+  box-shadow: var(--gd-ring);
+}
+
+.gd-steps__item.is-done .gd-steps__dot {
+  border-color: transparent;
+  background-image: var(--gd-grad-gold);
+  color: var(--gd-on-gold);
+}
+
+.gd-steps__label {
+  font-size: var(--gd-fz-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--gd-ls-wide);
+  color: var(--gd-text-dim);
+  text-align: center;
+}
+
+.gd-steps__item.is-current .gd-steps__label {
+  color: var(--gd-text);
+}
+
+/* =========================================================== TeamCrest */
+
+.gd-crest {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--gd-crest-size, 56px);
+  height: var(--gd-crest-size, 56px);
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: linear-gradient(140deg, var(--gd-crest-c1), var(--gd-crest-c2));
+  border: 1px solid rgba(244, 246, 251, 0.14);
+  box-shadow: var(--gd-shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: box-shadow var(--gd-t-slow) var(--gd-ease-out);
+}
+
+/* Banda decorativa: 3 patrones x 16 equipos = cada escudo se distingue
+   de un vistazo, sin un solo archivo de imagen. */
+.gd-crest::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+/* Franja diagonal */
+.gd-crest--band-0::before {
+  background: linear-gradient(
+    118deg,
+    transparent 38%,
+    var(--gd-crest-band) 38%,
+    var(--gd-crest-band) 56%,
+    transparent 56%
+  );
+}
+
+/* Mitades verticales */
+.gd-crest--band-1::before {
+  background: linear-gradient(90deg, transparent 50%, var(--gd-crest-band) 50%);
+}
+
+/* Tres rayas */
+.gd-crest--band-2::before {
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 22%,
+    var(--gd-crest-band) 22% 32%
+  );
+}
+
+.gd-crest__abbr {
+  position: relative;
+  z-index: 1;
+  font-family: var(--gd-font-display);
+  font-size: calc(var(--gd-crest-size, 56px) * 0.28);
+  font-weight: var(--gd-fw-black);
+  letter-spacing: 0.5px;
+  color: var(--gd-crest-fg, var(--gd-text));
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+.gd-crest--winning {
+  box-shadow: var(--gd-shadow-sm), 0 0 0 2px var(--gd-gold-500),
+    0 0 18px rgba(231, 197, 102, 0.3);
+}
+
+/* ============================================================== Avatar */
+
+.gd-avatar {
+  display: grid;
+  place-items: center;
+  width: var(--gd-avatar-size, 36px);
+  height: var(--gd-avatar-size, 36px);
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background-image: var(--gd-grad-gold);
+  color: var(--gd-on-gold);
+  font-family: var(--gd-font-display);
+  font-size: calc(var(--gd-avatar-size, 36px) * 0.36);
+  font-weight: var(--gd-fw-black);
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 0 2px var(--gd-bg), 0 0 0 3px var(--gd-border-gold);
+}
+
+/* ============================================================== Modal */
+
+.gd-modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--gd-z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--gd-gutter);
+  background: var(--gd-overlay);
+  backdrop-filter: blur(6px);
+  overflow-y: auto;
+  animation: gd-overlay-in var(--gd-t-base) var(--gd-ease-out) both;
+}
+
+.gd-modal__panel {
+  position: relative;
+  width: min(100%, 520px);
+  /* dvh y NO vh: en Safari movil, vh incluye la barra que se colapsa y
+     el pie del modal queda recortado. */
+  max-height: calc(100dvh - var(--gd-gutter) * 2);
+  display: flex;
+  flex-direction: column;
+  background-image: var(--gd-grad-surface);
+  border: 1px solid var(--gd-border-gold);
+  border-radius: var(--gd-r-xl);
+  box-shadow: var(--gd-shadow-xl), var(--gd-inset-top);
+  animation: gd-modal-in var(--gd-t-slow) var(--gd-ease-out) both;
+}
+
+.gd-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gd-sp-4);
+  padding: var(--gd-sp-5) var(--gd-sp-5) var(--gd-sp-4);
+}
+
+.gd-modal__title {
+  font-size: var(--gd-fz-xl);
+}
+
+.gd-modal__close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid var(--gd-border-soft);
+  border-radius: var(--gd-r-sm);
+  color: var(--gd-text-muted);
+  transition: var(--gd-tr-base);
+}
+
+.gd-modal__close:hover {
+  color: var(--gd-gold-400);
+  border-color: var(--gd-border-gold);
+  background: rgba(231, 197, 102, 0.08);
+}
+
+.gd-modal__body {
+  padding: 0 var(--gd-sp-5) var(--gd-sp-5);
+  overflow-y: auto;
+  color: var(--gd-text-soft);
+}
+
+.gd-modal__foot {
+  display: flex;
+  gap: var(--gd-sp-3);
+  justify-content: flex-end;
+  padding: var(--gd-sp-4) var(--gd-sp-5) var(--gd-sp-5);
+  border-top: 1px solid var(--gd-border-soft);
+}
+
+/* ============================================================ Checkbox */
+
+.gd-check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gd-sp-2);
+  cursor: pointer;
+  color: var(--gd-text-muted);
+  font-size: var(--gd-fz-sm);
+}
+
+.gd-check input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.gd-check__box {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  border: 1.5px solid var(--gd-border-strong);
+  border-radius: var(--gd-r-xs);
+  color: transparent;
+  transition: var(--gd-tr-base);
+}
+
+.gd-check input:checked + .gd-check__box {
+  background-image: var(--gd-grad-gold);
+  border-color: transparent;
+  color: var(--gd-on-gold);
+}
+
+.gd-check input:focus-visible + .gd-check__box {
+  box-shadow: var(--gd-ring);
+}
+
+.gd-check--start {
+  align-items: flex-start;
+  line-height: var(--gd-lh-normal);
+}
+
+.gd-check--start .gd-check__box {
+  margin-top: 3px;
+}
+
+/* ========================================================== Responsive */
+
+@media (max-width: 560px) {
+  .gd-modal {
+    place-items: end center;
+    padding: 0;
+  }
+
+  .gd-modal__panel {
+    width: 100%;
+    max-height: 92dvh;
+    border-radius: var(--gd-r-2xl) var(--gd-r-2xl) 0 0;
+    animation-name: gd-sheet-in;
+  }
+
+  .gd-modal__foot {
+    flex-direction: column-reverse;
+  }
+
+  .gd-modal__foot .gd-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .gd-steps__label { display: none; }
+  .gd-otp { gap: 5px; }
+  .gd-otp__box { font-size: var(--gd-fz-lg); }
+}
+
+/* iOS Safari hace zoom al enfocar cualquier input de menos de 16px. */
+@media (max-width: 768px) {
+  .gd-field__input,
+  .gd-field__select,
+  .gd-otp__box {
+    font-size: 16px;
+  }
+}

@@ -1,0 +1,241 @@
+// =============================================================================
+//  ms-autenticacion  ·  SQL Server  ·  puerto gRPC por defecto 50051
+//
+//  Dueño de: usuarios, contraseñas (hash bcrypt), roles, ficha del cliente
+//  (documento, telefono, nacimiento), cuentas externas de Google y Microsoft,
+//  tokens de seguridad (tabla Sesion) y solicitudes de recuperacion de clave.
+//
+//  Es el UNICO servicio que conoce JWT_SECRET. El BFF no verifica firmas:
+//  llama a ValidarToken en cada peticion protegida, y asi un token revocado
+//  (cierre de sesion) deja de servir en el acto.
+// =============================================================================
+
+syntax = "proto3";
+
+package goldorado.autenticacion;
+
+import "comun.proto";
+
+service Autenticacion {
+  rpc Salud (goldorado.comun.Vacio) returns (goldorado.comun.EstadoSalud);
+
+  // ---------------------------------------------------------------- sesion
+  // Correo O numero de documento + contraseña. Fallo: UNAUTHENTICATED con el
+  // mismo mensaje para "no existe", "clave mala" y "sin contraseña local".
+  rpc IniciarSesion (IniciarSesionRequest) returns (SesionResponse);
+  // Usuario + Cliente + Cliente_Telefono + Usuario_Rol en UNA transaccion.
+  // Fallo: ALREADY_EXISTS ("Ya existe una cuenta con ese correo" / "...documento").
+  rpc Registrar (RegistrarRequest) returns (SesionResponse);
+  // Firma + vigencia + que la sesion (jti) no este revocada. Fallo: UNAUTHENTICATED.
+  rpc ValidarToken (ValidarTokenRequest) returns (ValidarTokenResponse);
+  // Revoca la sesion del token. Idempotente.
+  rpc CerrarSesion (CerrarSesionRequest) returns (goldorado.comun.Vacio);
+  // "Cerrar sesion en todos mis dispositivos".
+  rpc CerrarTodasLasSesiones (IdUsuarioRequest) returns (CerrarTodasResponse);
+
+  // ------------------------------------------- cuentas de Google y Microsoft
+  rpc ListarProveedores (goldorado.comun.Vacio) returns (ListarProveedoresResponse);
+  // Arma la URL de autorizacion (OpenID Connect + PKCE). El BFF genera state,
+  // nonce y code_verifier y solo envia aqui el code_challenge.
+  // Fallo: FAILED_PRECONDITION si el proveedor no esta configurado.
+  rpc UrlAutorizacionExterna (UrlAutorizacionRequest) returns (UrlAutorizacionResponse);
+  // Cambia el `code` por tokens, valida el id_token (firma JWKS, iss, aud, exp,
+  // nonce) y busca o crea el usuario vinculado. Emite NUESTRO JWT.
+  rpc IniciarSesionExterna (IniciarSesionExternaRequest) returns (SesionResponse);
+
+  // ---------------------------------------------------------------- perfil
+  rpc ObtenerUsuario (IdUsuarioRequest) returns (Usuario);
+  rpc ActualizarPerfil (ActualizarPerfilRequest) returns (Usuario);
+  // Para quien entro con Google/Microsoft y aun no tiene ficha de Cliente.
+  // Fallo: ALREADY_EXISTS si el documento ya es de otra cuenta;
+  // FAILED_PRECONDITION si el perfil ya estaba completo.
+  rpc CompletarPerfil (CompletarPerfilRequest) returns (Usuario);
+  // (La foto de perfil NO vive aqui: es una imagen de ms-imagenes con
+  //  entidad 'usuario' e id = id_usuario. El BFF la resuelve.)
+  rpc ListarTiposDocumento (goldorado.comun.Vacio) returns (ListarTiposDocumentoResponse);
+
+  // ------------------------------- recuperacion de contraseña (persistida)
+  rpc BuscarCuenta (BuscarCuentaRequest) returns (BuscarCuentaResponse);
+  rpc SolicitarCodigo (SolicitarCodigoRequest) returns (SolicitarCodigoResponse);
+  // Fallo: INVALID_ARGUMENT (codigo incorrecto, quedan intentos) o
+  // FAILED_PRECONDITION con x-datos {"tokenDead":true} (vencida o sin intentos).
+  rpc VerificarCodigo (VerificarCodigoRequest) returns (VerificarCodigoResponse);
+  rpc RestablecerPassword (RestablecerPasswordRequest) returns (RestablecerPasswordResponse);
+}
+
+// IP y navegador del usuario final. Los rellena el BFF: el microservicio nunca
+// ve la peticion HTTP original.
+message ContextoCliente {
+  string ip = 1;
+  string user_agent = 2;
+}
+
+message Usuario {
+  int64 id = 1;
+  string email = 2;
+  string nombres = 3;                      // '' si aun no completa el perfil
+  string apellidos = 4;
+  string nombre_completo = 5;
+  optional string tipo_documento = 6;      // 'CC'
+  optional string numero_documento = 7;
+  optional string telefono = 8;            // el MOVIL principal
+  optional string fecha_nacimiento = 9;    // YYYY-MM-DD
+  string rol = 10;                         // 'cliente' | 'admin' | 'soporte' (minusculas)
+  bool perfil_completo = 11;               // tiene ficha de Cliente
+  bool tiene_password = 12;                // false si solo entra con Google/Microsoft
+  repeated string proveedores = 13;        // cuentas externas vinculadas: 'GOOGLE', 'MICROSOFT'
+  string creado_en = 14;                   // ISO 8601
+  optional string ultimo_login = 15;       // ISO 8601
+}
+
+message SesionResponse {
+  string token = 1;        // JWT de acceso (lleva sub, rol y jti)
+  string expira_en = 2;    // ISO 8601
+  Usuario usuario = 3;
+  bool es_nuevo = 4;       // IniciarSesionExterna: la cuenta se creo en este login
+}
+
+message IniciarSesionRequest {
+  string identificador = 1;   // correo o numero de documento
+  string password = 2;
+  ContextoCliente contexto = 3;
+}
+
+message RegistrarRequest {
+  string email = 1;
+  string password = 2;
+  string nombres = 3;
+  string apellidos = 4;
+  string tipo_documento = 5;
+  string numero_documento = 6;
+  string telefono = 7;
+  string fecha_nacimiento = 8;   // YYYY-MM-DD
+  ContextoCliente contexto = 9;
+}
+
+message ValidarTokenRequest {
+  string token = 1;
+}
+
+message ValidarTokenResponse {
+  int64 id_usuario = 1;
+  string rol = 2;              // minusculas
+  string jti = 3;
+  bool perfil_completo = 4;
+  string expira_en = 5;        // ISO 8601
+}
+
+message CerrarSesionRequest {
+  string token = 1;
+  ContextoCliente contexto = 2;
+}
+
+message IdUsuarioRequest {
+  int64 id_usuario = 1;
+}
+
+message CerrarTodasResponse {
+  int32 sesiones_cerradas = 1;
+}
+
+message Proveedor {
+  string codigo = 1;       // 'GOOGLE' | 'MICROSOFT'
+  string nombre = 2;       // 'Google' | 'Microsoft'
+  bool habilitado = 3;     // false si faltan client_id / client_secret en el .env
+}
+
+message ListarProveedoresResponse {
+  repeated Proveedor proveedores = 1;
+}
+
+message UrlAutorizacionRequest {
+  string proveedor = 1;        // 'GOOGLE' | 'MICROSOFT'
+  string redirect_uri = 2;     // callback del BFF registrado en la consola del proveedor
+  string state = 3;
+  string nonce = 4;
+  string code_challenge = 5;   // PKCE, metodo S256
+}
+
+message UrlAutorizacionResponse {
+  string url = 1;
+}
+
+message IniciarSesionExternaRequest {
+  string proveedor = 1;
+  string code = 2;
+  string code_verifier = 3;
+  string redirect_uri = 4;     // EXACTAMENTE la misma usada en la autorizacion
+  string nonce = 5;            // el que el BFF guardo en su cookie firmada
+  ContextoCliente contexto = 6;
+}
+
+message ActualizarPerfilRequest {
+  int64 id_usuario = 1;
+  optional string nombres = 2;
+  optional string apellidos = 3;
+  optional string telefono = 4;
+}
+
+message CompletarPerfilRequest {
+  int64 id_usuario = 1;
+  string nombres = 2;
+  string apellidos = 3;
+  string tipo_documento = 4;
+  string numero_documento = 5;
+  string telefono = 6;
+  string fecha_nacimiento = 7;   // YYYY-MM-DD, mayor de 18
+}
+
+message TipoDocumento {
+  string codigo = 1;   // 'CC'
+  string nombre = 2;   // 'Cédula de ciudadanía'
+}
+
+message ListarTiposDocumentoResponse {
+  repeated TipoDocumento tipos = 1;
+}
+
+message BuscarCuentaRequest {
+  string identificador = 1;
+}
+
+message BuscarCuentaResponse {
+  int64 id_usuario = 1;
+  string email_enmascarado = 2;      // ****@hotmail.com
+  string telefono_enmascarado = 3;   // ***** 567
+  bool tiene_email = 4;
+  bool tiene_sms = 5;
+}
+
+message SolicitarCodigoRequest {
+  string identificador = 1;
+  string metodo = 2;   // 'email' | 'sms'
+  ContextoCliente contexto = 3;
+}
+
+message SolicitarCodigoResponse {
+  string token = 1;                  // identifica la solicitud (no es el codigo)
+  string metodo = 2;
+  string destino_enmascarado = 3;
+  int64 expira_en_ms = 4;            // epoch en milisegundos
+  optional string codigo_dev = 5;    // SOLO en desarrollo: no hay servicio real de correo/SMS
+}
+
+message VerificarCodigoRequest {
+  string token = 1;
+  string codigo = 2;
+}
+
+message VerificarCodigoResponse {
+  string reset_token = 1;
+}
+
+message RestablecerPasswordRequest {
+  string reset_token = 1;
+  string password = 2;
+  ContextoCliente contexto = 3;
+}
+
+message RestablecerPasswordResponse {
+  string email = 1;
+}

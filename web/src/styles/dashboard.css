@@ -1,0 +1,289 @@
+/* ========================================================================
+   dashboard.css - /inicio: bienvenida, banner de promo, grid de promos
+   ======================================================================== */
+
+.gd-welcome {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(2rem, 1.4rem + 3.4vw, 4rem);
+}
+
+.gd-welcome::before {
+  content: '';
+  position: absolute;
+  inset: -40% -10% auto;
+  height: 160%;
+  background-image: var(--gd-grad-hero);
+  pointer-events: none;
+}
+
+.gd-welcome__inner {
+  position: relative;
+}
+
+.gd-welcome__title {
+  margin: var(--gd-sp-3) 0 var(--gd-sp-2);
+  font-size: clamp(1.75rem, 1rem + 3.4vw, 3rem);
+  font-weight: var(--gd-fw-black);
+  letter-spacing: var(--gd-ls-tighter);
+}
+
+.gd-welcome__sub {
+  margin: 0 0 var(--gd-sp-5);
+  color: var(--gd-text-soft);
+}
+
+.gd-welcome__balance {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--gd-sp-4);
+  padding: var(--gd-sp-4) var(--gd-sp-5);
+  background: var(--gd-surface);
+  border: 1px solid var(--gd-border-gold);
+  border-radius: var(--gd-r-lg);
+  box-shadow: var(--gd-shadow-md), var(--gd-inset-top);
+}
+
+.gd-welcome__balance-label {
+  font-size: var(--gd-fz-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--gd-ls-wide);
+  color: var(--gd-text-muted);
+}
+
+.gd-welcome__balance-value {
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-2xl);
+  font-weight: var(--gd-fw-black);
+  color: var(--gd-gold-400);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ======================================================== Banner promo
+   El banner NO va solo a 1200 px de ancho: estirado con un boton chico
+   flotando en navy se ve inacabado. Se empareja con el panel lateral. */
+
+.gd-promo-lead {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: var(--gd-sp-5);
+}
+
+.gd-promo-banner {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.5rem, 1.1rem + 2.4vw, 2.5rem);
+  border: 1px solid var(--gd-border-gold);
+  border-radius: var(--gd-r-xl);
+  background: linear-gradient(115deg, var(--gd-navy-800) 0%, var(--gd-navy-700) 48%, #1b2a48 100%);
+  box-shadow: var(--gd-shadow-lg), var(--gd-inset-top);
+}
+
+.gd-promo-banner::before {
+  content: '';
+  position: absolute;
+  inset: -60% -10% auto auto;
+  width: 60%;
+  aspect-ratio: 1;
+  background: radial-gradient(closest-side, rgba(231, 197, 102, 0.22), transparent 70%);
+  pointer-events: none;
+}
+
+/* El "50%" gigante en contorno detras del contenido es lo que hace que
+   esto se lea como promo de casino y no como tarjeta de marketing.
+   Cuesta un pseudo-elemento. */
+.gd-promo-banner__ghost {
+  position: absolute;
+  right: -2%;
+  bottom: -26%;
+  font-family: var(--gd-font-display);
+  font-size: clamp(7rem, 18vw, 13rem);
+  font-weight: var(--gd-fw-black);
+  line-height: 0.8;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(231, 197, 102, 0.2);
+  pointer-events: none;
+  user-select: none;
+}
+
+.gd-promo-banner__title {
+  position: relative;
+  margin: var(--gd-sp-3) 0;
+  font-size: clamp(2rem, 1.2rem + 3.6vw, 3.25rem);
+  font-weight: var(--gd-fw-black);
+  letter-spacing: var(--gd-ls-tighter);
+  background-image: var(--gd-grad-gold-text);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gd-promo-banner__text {
+  position: relative;
+  margin: 0 0 var(--gd-sp-5);
+  max-width: 42ch;
+  color: var(--gd-text-soft);
+}
+
+.gd-promo-banner__cta {
+  position: relative;
+}
+
+/* --------------------------------------------------------- Panel lateral */
+
+.gd-promo-lead__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gd-sp-4);
+}
+
+.gd-promo-lead__side-title {
+  font-size: var(--gd-fz-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--gd-ls-wider);
+  color: var(--gd-gold-400);
+}
+
+.gd-promo-lead__stats {
+  display: grid;
+  gap: var(--gd-sp-3);
+  list-style: none;
+}
+
+.gd-promo-lead__stats li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gd-sp-3);
+  padding-bottom: var(--gd-sp-3);
+  border-bottom: 1px solid var(--gd-border-soft);
+}
+
+.gd-promo-lead__stats li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.gd-promo-lead__stats span {
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-muted);
+}
+
+.gd-promo-lead__stats strong {
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-xl);
+  font-weight: var(--gd-fw-black);
+  color: var(--gd-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.gd-promo-lead__stats strong.is-win {
+  color: var(--gd-success);
+}
+
+/* ========================================================== Grid promos */
+
+.gd-promo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--gd-sp-5);
+}
+
+.gd-promo-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gd-sp-3);
+  overflow: hidden;
+}
+
+.gd-promo-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--gd-promo-accent, var(--gd-grad-gold));
+}
+
+.gd-promo-card--gold    { --gd-promo-accent: var(--gd-grad-gold); }
+.gd-promo-card--emerald { --gd-promo-accent: linear-gradient(135deg, #34d399, #059669); }
+.gd-promo-card--violet  { --gd-promo-accent: linear-gradient(135deg, #a78bfa, #6d28d9); }
+.gd-promo-card--crimson { --gd-promo-accent: linear-gradient(135deg, #fb7185, #be123c); }
+
+.gd-promo-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gd-sp-3);
+}
+
+.gd-promo-card__title {
+  font-size: var(--gd-fz-lg);
+  font-weight: var(--gd-fw-bold);
+}
+
+.gd-promo-card__subtitle {
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-gold-400);
+  font-weight: var(--gd-fw-medium);
+}
+
+.gd-promo-card__text {
+  flex: 1;
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-muted);
+  line-height: 1.55;
+}
+
+.gd-promo-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gd-sp-3);
+  padding-top: var(--gd-sp-3);
+  border-top: 1px solid var(--gd-border-soft);
+}
+
+.gd-promo-card__expiry {
+  font-size: var(--gd-fz-xs);
+  color: var(--gd-text-dim);
+}
+
+/* ============================================================ NotFound */
+
+.gd-notfound {
+  display: grid;
+  place-items: center;
+  gap: var(--gd-sp-4);
+  min-height: 60dvh;
+  padding: var(--gd-sp-7) var(--gd-gutter);
+  text-align: center;
+}
+
+.gd-notfound__code {
+  font-family: var(--gd-font-display);
+  font-size: clamp(4rem, 2rem + 12vw, 9rem);
+  font-weight: var(--gd-fw-black);
+  line-height: 0.9;
+  letter-spacing: var(--gd-ls-tighter);
+  background-image: var(--gd-grad-gold-text);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gd-notfound__text {
+  max-width: 46ch;
+  color: var(--gd-text-muted);
+}
+
+/* ========================================================== Responsive */
+
+@media (max-width: 1024px) {
+  .gd-promo-lead {
+    grid-template-columns: 1fr;
+  }
+}

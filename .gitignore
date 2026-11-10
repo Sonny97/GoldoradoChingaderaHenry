@@ -1,0 +1,26 @@
+node_modules
+dist
+dist-ssr
+.vite
+*.local
+*.log
+npm-debug.log*
+.DS_Store
+
+# Secretos: cada servicio trae su .env.example; el .env real NUNCA se versiona.
+.env
+.env.*
+!.env.example
+
+# Llaves de cuentas de servicio (Firebase, Google Drive) y tokens OAuth.
+credenciales/
+**/credenciales/
+*.serviceaccount.json
+firebase-adminsdk*.json
+
+# Almacen local de imagenes (modo IMAGENES_ALMACEN=local).
+servicios/ms-imagenes/storage/
+
+.vscode/*
+!.vscode/extensions.json
+.idea

@@ -1,0 +1,438 @@
+/* ========================================================================
+   home.css - Hero, tiles de categoria, tarjetas de partido, franja de cuotas
+   ======================================================================== */
+
+/* ================================================================ Hero */
+
+.gd-hero {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(2.5rem, 1.6rem + 5vw, 6rem);
+}
+
+.gd-hero__glow {
+  position: absolute;
+  inset: -20% -10% auto;
+  height: 140%;
+  background-image: var(--gd-grad-hero);
+  pointer-events: none;
+}
+
+.gd-hero__inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: center;
+  gap: var(--gd-sp-7);
+}
+
+.gd-hero__title {
+  margin: var(--gd-sp-4) 0 var(--gd-sp-4);
+  max-width: 14ch;
+  font-size: var(--gd-fz-hero);
+  font-weight: var(--gd-fw-black);
+  letter-spacing: var(--gd-ls-tighter);
+}
+
+.gd-hero__sub {
+  margin: 0 0 var(--gd-sp-6);
+  max-width: 46ch;
+  font-size: var(--gd-fz-lg);
+  color: var(--gd-text-soft);
+}
+
+.gd-hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gd-sp-4);
+}
+
+.gd-hero__stats {
+  display: flex;
+  gap: var(--gd-sp-7);
+  list-style: none;
+  margin-top: var(--gd-sp-7);
+  padding-top: var(--gd-sp-5);
+  border-top: 1px solid var(--gd-border-soft);
+}
+
+.gd-hero__stats li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gd-hero__stats strong {
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-2xl);
+  font-weight: var(--gd-fw-black);
+  color: var(--gd-gold-400);
+  font-variant-numeric: tabular-nums;
+}
+
+.gd-hero__stats span {
+  font-size: var(--gd-fz-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--gd-ls-wide);
+  color: var(--gd-text-muted);
+}
+
+/* Sin assets, la geometria y los degradados leen mucho mejor que un JPEG
+   de estadio mediocre. */
+.gd-hero__visual {
+  justify-self: center;
+  opacity: 0.9;
+  transform: rotate(-8deg);
+  filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.6));
+  animation: gd-float 9s var(--gd-ease-in-out) infinite;
+}
+
+.gd-hero__visual svg {
+  width: min(400px, 100%);
+  height: auto;
+}
+
+/* ====================================================== Tiles categoria */
+
+.gd-cats__row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--gd-sp-4);
+  list-style: none;
+}
+
+.gd-cat-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gd-sp-3);
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-decoration: none;
+}
+
+/* Las 5 cajas miden IGUAL. El crescendo del boceto se logra rampando la
+   opacidad del borde dorado, no escalando las cajas: escalarlas de verdad
+   se lee como una grilla rota, no como una decision. */
+.gd-cat-tile__box {
+  --gd-tile-gold: calc(0.18 + var(--i) * 0.09);
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 132px;
+  aspect-ratio: 1;
+  margin-inline: auto;
+  border: 1px solid rgba(231, 197, 102, var(--gd-tile-gold));
+  border-radius: var(--gd-r-lg);
+  background: linear-gradient(
+    160deg,
+    rgba(231, 197, 102, calc(var(--gd-tile-gold) * 0.16)) 0%,
+    var(--gd-surface) 58%
+  );
+  box-shadow: var(--gd-shadow-sm), var(--gd-inset-top);
+  color: var(--gd-gold-400);
+  transition: transform var(--gd-t-slow) var(--gd-ease-out),
+    box-shadow var(--gd-t-slow) var(--gd-ease-out),
+    border-color var(--gd-t-slow) var(--gd-ease-out);
+}
+
+.gd-cat-tile__icon {
+  display: block;
+  transform: scale(calc(1 + var(--i) * 0.04));
+}
+
+.gd-cat-tile__label {
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-semibold);
+  letter-spacing: var(--gd-ls-wide);
+  color: var(--gd-text-soft);
+  transition: color var(--gd-t-base) var(--gd-ease-out);
+}
+
+.gd-cat-tile:hover .gd-cat-tile__box {
+  transform: translateY(-6px) scale(1.03);
+  border-color: var(--gd-gold-500);
+  box-shadow: var(--gd-shadow-lg), var(--gd-glow-gold);
+}
+
+.gd-cat-tile:hover .gd-cat-tile__label {
+  color: var(--gd-gold-300);
+}
+
+.gd-cat-tile:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.gd-cat-tile:focus-visible .gd-cat-tile__box {
+  box-shadow: var(--gd-ring);
+}
+
+.gd-cat-tile.is-active .gd-cat-tile__box {
+  border-color: var(--gd-gold-500);
+  background: linear-gradient(160deg, rgba(231, 197, 102, 0.16) 0%, var(--gd-surface) 58%);
+  box-shadow: var(--gd-shadow-md), var(--gd-glow-gold);
+}
+
+.gd-cat-tile.is-active .gd-cat-tile__label {
+  color: var(--gd-gold-300);
+}
+
+/* ========================================================== Match grid */
+
+.gd-match-grid {
+  display: grid;
+  /* auto-fill + minmax nunca desborda a ningun ancho. `repeat(3, 1fr)` mas
+     media queries siempre se rompe en algun tamaño intermedio. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: var(--gd-sp-5);
+}
+
+.gd-match-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gd-match-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gd-sp-3);
+  padding: var(--gd-sp-4) var(--gd-sp-4);
+  border-bottom: 1px solid var(--gd-border-soft);
+}
+
+.gd-match-card__league {
+  display: flex;
+  align-items: center;
+  gap: var(--gd-sp-2);
+  font-size: var(--gd-fz-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--gd-ls-wide);
+  color: var(--gd-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gd-match-card__min {
+  color: var(--gd-danger-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.gd-match-card__teams {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--gd-sp-3);
+  padding: var(--gd-sp-5) var(--gd-sp-4) var(--gd-sp-4);
+}
+
+.gd-match-card__side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gd-sp-2);
+  min-width: 0;
+}
+
+.gd-match-card__name {
+  max-width: 100%;
+  font-size: var(--gd-fz-xs);
+  color: var(--gd-text-muted);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gd-match-card__score {
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-3xl);
+  font-weight: var(--gd-fw-black);
+  line-height: 1;
+  color: var(--gd-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.gd-match-card__score--pending {
+  font-size: var(--gd-fz-xl);
+  color: var(--gd-text-dim);
+}
+
+.gd-match-card__vs {
+  align-self: center;
+  padding: var(--gd-sp-2) var(--gd-sp-3);
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-2xs);
+  font-weight: var(--gd-fw-bold);
+  letter-spacing: var(--gd-ls-wider);
+  color: var(--gd-text-dim);
+  border: 1px solid var(--gd-border-soft);
+  border-radius: var(--gd-r-pill);
+}
+
+/* ======================================================== Franja cuotas
+   gap:1px sobre un padre con el color del borde = filetes perfectos sin
+   bordes dobles. La franja NUNCA envuelve, a ningun ancho. */
+
+.gd-match-card__odds {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--gd-border-soft);
+  border-top: 1px solid var(--gd-border-soft);
+}
+
+.gd-odd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--gd-sp-3) var(--gd-sp-1);
+  background: var(--gd-surface-2);
+  border: 0;
+  color: var(--gd-text);
+  transition: background-color var(--gd-t-base) var(--gd-ease-out),
+    color var(--gd-t-base) var(--gd-ease-out);
+}
+
+.gd-odd__label {
+  font-size: var(--gd-fz-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--gd-ls-wide);
+  color: var(--gd-text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.gd-odd__value {
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-bold);
+  color: var(--gd-gold-400);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.gd-odd:hover {
+  background: rgba(231, 197, 102, 0.12);
+}
+
+.gd-odd:hover .gd-odd__value {
+  color: var(--gd-gold-300);
+}
+
+.gd-odd:focus-visible {
+  outline: none;
+  box-shadow: inset var(--gd-ring);
+}
+
+.gd-odd.is-active {
+  background-image: var(--gd-grad-gold);
+}
+
+.gd-odd.is-active .gd-odd__label {
+  color: rgba(10, 18, 38, 0.72);
+}
+
+.gd-odd.is-active .gd-odd__value {
+  color: var(--gd-on-gold);
+}
+
+/* ======================================================= Estados grid */
+
+.gd-match-grid__state {
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: center;
+  gap: var(--gd-sp-3);
+  padding: var(--gd-sp-8) var(--gd-sp-4);
+  text-align: center;
+  color: var(--gd-text-muted);
+}
+
+.gd-match-grid__state .gd-spinner {
+  color: var(--gd-gold-500);
+}
+
+/* Esqueleto de carga: mismo alto que una tarjeta real, para que la pagina
+   no de un salto cuando llegan los datos. */
+.gd-skeleton {
+  height: 214px;
+  border-radius: var(--gd-r-lg);
+  border: 1px solid var(--gd-border-soft);
+  background: linear-gradient(
+    100deg,
+    var(--gd-surface) 30%,
+    var(--gd-surface-3) 50%,
+    var(--gd-surface) 70%
+  );
+  background-size: 220% 100%;
+  animation: gd-shimmer 2.4s var(--gd-ease-in-out) infinite;
+}
+
+/* ========================================================== Responsive */
+
+@media (max-width: 900px) {
+  .gd-hero__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .gd-hero__visual {
+    position: absolute;
+    inset: 0 -20% auto auto;
+    z-index: -1;
+    opacity: 0.07;
+    filter: none;
+    animation: none;
+  }
+
+  .gd-hero__stats {
+    gap: var(--gd-sp-5);
+    flex-wrap: wrap;
+  }
+}
+
+/* 5 -> 3 columnas deja una fila huerfana de 2 que se ve rota. Se pasa a un
+   carril con snap, que es el patron nativo de las apps de casino en movil. */
+@media (max-width: 560px) {
+  .gd-cats__row {
+    display: flex;
+    gap: var(--gd-sp-3);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin-inline: calc(var(--gd-gutter) * -1);
+    padding: 0 var(--gd-gutter) var(--gd-sp-3);
+  }
+
+  .gd-cats__row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .gd-cats__item {
+    flex: 0 0 104px;
+    scroll-snap-align: start;
+  }
+
+  .gd-cat-tile__box {
+    max-width: 104px;
+  }
+}
+
+@media (max-width: 400px) {
+  .gd-odd {
+    padding-inline: 2px;
+  }
+
+  .gd-odd__value {
+    font-size: var(--gd-fz-xs);
+  }
+}

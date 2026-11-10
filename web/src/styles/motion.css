@@ -1,0 +1,152 @@
+/* ========================================================================
+   motion.css - Keyframes y bindings de animacion
+   Solo se animan transform, opacity, box-shadow, background-position y color.
+   Nunca top/left/width/height. Sin will-change en ningun lado.
+   ======================================================================== */
+
+@keyframes gd-fade-up {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes gd-card-in {
+  from { opacity: 0; transform: translate3d(0, 24px, 0) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes gd-menu-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes gd-modal-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes gd-sheet-in {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes gd-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Ciclo largo y amplitud baja. Un barrido metalico rapido es LA señal
+   numero uno de plantilla de casino barata. */
+@keyframes gd-shimmer {
+  0%   { background-position: 200% 50%; }
+  100% { background-position: -60% 50%; }
+}
+
+@keyframes gd-sheen {
+  0%   { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
+  18%  { opacity: 0.5; }
+  100% { transform: translateX(320%) skewX(-18deg); opacity: 0; }
+}
+
+@keyframes gd-live-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.65); opacity: 1; }
+  70%  { box-shadow: 0 0 0 8px rgba(255, 77, 77, 0); opacity: 0.85; }
+  100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); opacity: 1; }
+}
+
+@keyframes gd-gold-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(231, 197, 102, 0.55); }
+  70%      { box-shadow: 0 0 0 7px rgba(231, 197, 102, 0); }
+}
+
+@keyframes gd-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes gd-spin-dash {
+  0%   { stroke-dasharray: 1 150;  stroke-dashoffset: 0; }
+  50%  { stroke-dasharray: 90 150; stroke-dashoffset: -24; }
+  100% { stroke-dasharray: 90 150; stroke-dashoffset: -116; }
+}
+
+@keyframes gd-shake {
+  10%, 90%      { transform: translateX(-2px); }
+  20%, 80%      { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60%      { transform: translateX(6px); }
+}
+
+@keyframes gd-float {
+  0%, 100% { transform: translateY(0) rotate(-8deg); }
+  50%      { transform: translateY(-18px) rotate(-6deg); }
+}
+
+/* ------------------------------------------------------------- Bindings */
+
+/* Entrada escalonada. El tope en el item 11 es obligatorio: sin el, el
+   item 40 de una grilla esperaria 2.8 s antes de aparecer. */
+.gd-stagger > * {
+  animation: gd-fade-up 620ms var(--gd-ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 11) * 70ms);
+}
+
+/* ------------------------------------------------- prefers-reduced-motion */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .gd-stagger > * {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .gd-wordmark__gold.is-shimmer {
+    animation: none !important;
+    background-position: 0 50% !important;
+  }
+
+  .gd-eyebrow__dot {
+    animation: none !important;
+    box-shadow: 0 0 0 3px rgba(231, 197, 102, 0.28) !important;
+  }
+
+  .gd-badge--live .gd-badge__dot {
+    animation: none !important;
+    box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.3) !important;
+  }
+
+  .gd-hero__visual {
+    animation: none !important;
+    transform: rotate(-8deg) !important;
+  }
+
+  .gd-btn:hover,
+  .gd-card--interactive:hover,
+  .gd-cat-tile:hover .gd-cat-tile__box,
+  .gd-footer__social a:hover,
+  .gd-otp__box:focus {
+    transform: none !important;
+  }
+
+  .gd-btn--gold::after {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+
+  /* EXCEPCION DELIBERADA: el spinner comunica estado, no decoracion.
+     Congelarlo hace que la app parezca colgada. */
+  .gd-spinner svg {
+    animation: gd-spin 1.4s linear infinite !important;
+  }
+
+  .gd-spinner__head {
+    animation: gd-spin-dash 1.4s var(--gd-ease-in-out) infinite !important;
+  }
+}

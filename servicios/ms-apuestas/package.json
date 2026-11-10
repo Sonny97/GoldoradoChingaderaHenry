@@ -1,0 +1,18 @@
+{
+  "name": "@goldorado/ms-apuestas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Microservicio API de apuestas (PostgreSQL / Azure): mercados, cuotas, apuestas, billetera y promociones.",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon --watch src --watch ../../proto --watch ../../paquetes/comun/src --ext js,json,proto src/index.js",
+    "start": "node src/index.js",
+    "db:setup": "node db/setup.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@goldorado/comun": "^1.0.0",
+    "pg": "^8.23.1"
+  }
+}

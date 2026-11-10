@@ -1,0 +1,148 @@
+/* ========================================================================
+   utilities.css - Helpers reutilizables
+   ======================================================================== */
+
+.gd-container {
+  width: min(100% - var(--gd-gutter) * 2, var(--gd-container));
+  margin-inline: auto;
+}
+
+.gd-section {
+  padding-block: clamp(2.5rem, 1.6rem + 3.6vw, 4.5rem);
+}
+
+.gd-section__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--gd-sp-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--gd-sp-6);
+}
+
+.gd-section__title {
+  font-size: var(--gd-fz-section);
+  font-weight: var(--gd-fw-black);
+  letter-spacing: var(--gd-ls-tighter);
+  margin-top: var(--gd-sp-2);
+}
+
+/* Etiqueta dorada sobre cada titulo de seccion. Reemplaza al centrado
+   generico como recurso de jerarquia. */
+.gd-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gd-sp-2);
+  font-size: var(--gd-fz-xs);
+  font-weight: var(--gd-fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--gd-ls-wider);
+  color: var(--gd-gold-400);
+}
+
+.gd-eyebrow__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gd-gold-500);
+  animation: gd-gold-pulse 2.4s ease-out infinite;
+  flex: 0 0 auto;
+}
+
+.gd-text-gold {
+  background-image: var(--gd-grad-gold-text);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gd-link-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gd-sp-1);
+  color: var(--gd-gold-400);
+  font-weight: var(--gd-fw-medium);
+  font-size: var(--gd-fz-sm);
+}
+
+.gd-link-gold:hover {
+  color: var(--gd-gold-300);
+}
+
+/* Solo para lectores de pantalla. */
+.gd-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Salta al contenido: primer tabbable de la pagina, invisible hasta el foco. */
+.gd-skip-link {
+  position: absolute;
+  top: -100px;
+  left: var(--gd-gutter);
+  z-index: calc(var(--gd-z-sticky) + 1);
+  padding: var(--gd-sp-3) var(--gd-sp-4);
+  background: var(--gd-gold-500);
+  color: var(--gd-on-gold);
+  font-weight: var(--gd-fw-semibold);
+  border-radius: var(--gd-r-sm);
+  transition: top var(--gd-t-base) var(--gd-ease-out);
+}
+
+.gd-skip-link:focus {
+  top: var(--gd-sp-3);
+  color: var(--gd-on-gold);
+}
+
+/* Estado de carga a pantalla completa que usan los guards de ruta. */
+.gd-route-loading {
+  display: grid;
+  place-items: center;
+  gap: var(--gd-sp-4);
+  min-height: 60dvh;
+  color: var(--gd-gold-500);
+}
+
+.gd-route-loading__text {
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-muted);
+}
+
+.gd-divider {
+  height: 1px;
+  border: 0;
+  margin-block: var(--gd-sp-5);
+  background: var(--gd-border-soft);
+}
+
+.gd-divider--gold {
+  background-image: var(--gd-grad-divider);
+}
+
+.gd-divider-label {
+  display: flex;
+  align-items: center;
+  gap: var(--gd-sp-4);
+  margin-block: var(--gd-sp-5);
+}
+
+.gd-divider-label__line {
+  flex: 1;
+  height: 1px;
+  background-image: var(--gd-grad-divider);
+}
+
+.gd-divider-label__text {
+  font-size: var(--gd-fz-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--gd-ls-wider);
+  color: var(--gd-text-muted);
+}

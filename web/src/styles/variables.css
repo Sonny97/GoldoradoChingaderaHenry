@@ -1,0 +1,173 @@
+/* ========================================================================
+   variables.css - Tokens de diseño de GolDorado
+   Paleta: azul noche + dorado. Diseño oscuro unico (no hay tema claro).
+   ======================================================================== */
+
+:root {
+  /* `dark` hace que el popup del <select> nativo, la barra de scroll y el
+     selector de fecha se rendericen oscuros. Sin esto salen blancos. */
+  color-scheme: dark;
+
+  /* ---------------------------------------------------- Azul noche */
+  --gd-navy-950: #050b18;   /* fondo de pagina */
+  --gd-navy-900: #0a1226;   /* superficie base */
+  --gd-navy-850: #0d1730;
+  --gd-navy-800: #101b36;   /* superficie elevada */
+  --gd-navy-700: #17244a;
+  --gd-navy-600: #1f2f5c;
+  --gd-navy-500: #2b3e75;
+
+  /* ---------------------------------------------------- Dorado */
+  --gd-gold-200: #fdf4d8;
+  --gd-gold-300: #f7e9b8;
+  --gd-gold-400: #f2d98c;
+  --gd-gold-500: #e7c566;   /* dorado de marca */
+  --gd-gold-600: #c9a227;
+  --gd-gold-700: #a8851a;
+
+  /* ---------------------------------------------------- Texto
+     --gd-text-muted subido de #7C8DB5 a #A9B4CC para pasar AA (4.5:1)
+     sobre el fondo abisal. */
+  --gd-text: #f4f6fb;
+  --gd-text-soft: #d6dcec;
+  --gd-text-muted: #a9b4cc;
+  --gd-text-dim: #6e7b99;
+
+  /* Texto SOBRE superficie dorada. Siempre navy, nunca blanco:
+     blanco sobre dorado da 2.10:1 y es la trampa de esta paleta. */
+  --gd-on-gold: #0a1226;
+
+  /* ---------------------------------------------------- Estado */
+  --gd-success: #2fbf71;
+  --gd-success-soft: rgba(47, 191, 113, 0.12);
+  --gd-success-border: rgba(47, 191, 113, 0.4);
+  --gd-danger: #e5484d;
+  --gd-danger-text: #ff8085;
+  --gd-danger-soft: rgba(229, 72, 77, 0.12);
+  --gd-danger-border: rgba(229, 72, 77, 0.42);
+  --gd-warning: #f5a524;
+  --gd-info: #3b82f6;
+  --gd-info-soft: rgba(59, 130, 246, 0.12);
+  --gd-live: #ff4d4d;
+
+  /* ---------------------------------------------------- Superficies */
+  --gd-bg: var(--gd-navy-950);
+  --gd-surface: var(--gd-navy-900);
+  --gd-surface-2: var(--gd-navy-850);
+  --gd-surface-3: var(--gd-navy-800);
+  --gd-surface-glass: rgba(10, 18, 38, 0.78);
+
+  --gd-border: rgba(231, 197, 102, 0.18);
+  --gd-border-gold: rgba(231, 197, 102, 0.42);
+  --gd-border-soft: rgba(244, 246, 251, 0.08);
+  --gd-border-strong: rgba(244, 246, 251, 0.16);
+  --gd-overlay: rgba(3, 6, 14, 0.72);
+
+  /* ---------------------------------------------------- Degradados */
+  --gd-grad-gold: linear-gradient(135deg, var(--gd-gold-400) 0%, var(--gd-gold-600) 100%);
+  --gd-grad-gold-text: linear-gradient(
+    100deg,
+    var(--gd-gold-600) 0%,
+    var(--gd-gold-300) 30%,
+    var(--gd-gold-500) 55%,
+    var(--gd-gold-700) 100%
+  );
+  --gd-grad-surface: linear-gradient(165deg, var(--gd-navy-800) 0%, var(--gd-navy-900) 100%);
+  --gd-grad-divider: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(231, 197, 102, 0.35) 50%,
+    transparent 100%
+  );
+  --gd-grad-hero: radial-gradient(
+      70ch 60ch at 78% 12%,
+      rgba(231, 197, 102, 0.13) 0%,
+      transparent 62%
+    ),
+    radial-gradient(60ch 55ch at 8% 78%, rgba(59, 130, 246, 0.11) 0%, transparent 60%);
+
+  /* ---------------------------------------------------- Sombras */
+  --gd-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.32);
+  --gd-shadow-md: 0 8px 22px rgba(0, 0, 0, 0.38);
+  --gd-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.46);
+  --gd-shadow-xl: 0 28px 64px rgba(0, 0, 0, 0.55);
+  --gd-inset-top: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --gd-inset-field: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+  --gd-glow-gold: 0 0 26px rgba(231, 197, 102, 0.24);
+  --gd-ring: 0 0 0 3px rgba(201, 162, 39, 0.38);
+
+  /* ---------------------------------------------------- Forma */
+  --gd-r-xs: 4px;
+  --gd-r-sm: 8px;
+  --gd-r-md: 12px;
+  --gd-r-lg: 16px;
+  --gd-r-xl: 22px;
+  --gd-r-2xl: 28px;
+  --gd-r-pill: 999px;
+
+  /* ---------------------------------------------------- Espaciado */
+  --gd-sp-1: 4px;
+  --gd-sp-2: 8px;
+  --gd-sp-3: 12px;
+  --gd-sp-4: 16px;
+  --gd-sp-5: 24px;
+  --gd-sp-6: 32px;
+  --gd-sp-7: 48px;
+  --gd-sp-8: 64px;
+  --gd-sp-9: 96px;
+
+  --gd-container: 1200px;
+  --gd-gutter: 24px;
+  --gd-nav-h: 72px;
+
+  /* ---------------------------------------------------- Tipografia
+     Stack del sistema: cero red, cero FOUT, cero dependencias. */
+  --gd-font: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --gd-font-display: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+
+  --gd-fz-2xs: 11px;
+  --gd-fz-xs: 12px;
+  --gd-fz-sm: 14px;
+  --gd-fz-md: 16px;
+  --gd-fz-lg: 18px;
+  --gd-fz-xl: 22px;
+  --gd-fz-2xl: 28px;
+  --gd-fz-3xl: 34px;
+  --gd-fz-section: clamp(1.5rem, 1.1rem + 1.6vw, 2.125rem);
+  --gd-fz-hero: clamp(2.125rem, 1.2rem + 4.2vw, 3.75rem);
+
+  --gd-fw-regular: 400;
+  --gd-fw-medium: 500;
+  --gd-fw-semibold: 600;
+  --gd-fw-bold: 700;
+  --gd-fw-black: 800;
+
+  --gd-ls-tighter: -0.02em;
+  --gd-ls-tight: -0.01em;
+  --gd-ls-wide: 0.04em;
+  --gd-ls-wider: 0.1em;
+  --gd-lh-tight: 1.15;
+  --gd-lh-normal: 1.55;
+
+  /* ---------------------------------------------------- Movimiento */
+  --gd-t-fast: 130ms;
+  --gd-t-base: 200ms;
+  --gd-t-slow: 320ms;
+  --gd-t-slower: 520ms;
+  --gd-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --gd-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --gd-tr-base: all var(--gd-t-base) var(--gd-ease-out);
+
+  /* ---------------------------------------------------- Capas */
+  --gd-z-base: 1;
+  --gd-z-dropdown: 100;
+  --gd-z-sticky: 200;
+  --gd-z-modal: 400;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --gd-gutter: 16px;
+    --gd-nav-h: 62px;
+  }
+}

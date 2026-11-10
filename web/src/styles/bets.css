@@ -1,0 +1,337 @@
+/* ========================================================================
+   bets.css - Boleto de apuesta, historial, cuotas cerradas y las imagenes
+   reales (escudos y promos) que llegan de ms-imagenes.
+   Solo tokens de variables.css.
+   ======================================================================== */
+
+/* =================================================== Chip de cuota cerrada */
+
+.gd-odd:disabled,
+.gd-odd.is-closed {
+  cursor: not-allowed;
+  background: var(--gd-surface-2);
+}
+
+.gd-odd:disabled .gd-odd__value,
+.gd-odd.is-closed .gd-odd__value {
+  color: var(--gd-text-dim);
+  text-decoration: line-through;
+}
+
+.gd-odd:disabled:hover {
+  background: var(--gd-surface-2);
+}
+
+/* ============================================== Escudo real dentro del marco */
+
+/* El <img> ocupa el mismo disco que el escudo CSS; el ::before de la banda
+   se apaga para que no pinte rayas encima del escudo oficial. */
+.gd-crest--photo {
+  background: var(--gd-surface-3);
+}
+
+.gd-crest--photo::before {
+  display: none;
+}
+
+.gd-crest__img {
+  position: relative;
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+
+/* ======================================================= Promo con imagen */
+
+.gd-promo-media-host > *:not(.gd-promo-media):not(.gd-promo-banner__ghost) {
+  position: relative;
+}
+
+.gd-promo-media {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.16;
+  pointer-events: none;
+  /* Se desvanece hacia el lado del texto: la foto acompaña, no compite. */
+  -webkit-mask-image: linear-gradient(100deg, transparent 15%, #000 85%);
+  mask-image: linear-gradient(100deg, transparent 15%, #000 85%);
+}
+
+/* ========================================================= Boleto (modal) */
+
+.gd-betslip {
+  display: grid;
+  gap: var(--gd-sp-4);
+}
+
+.gd-betslip__match {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--gd-sp-3);
+}
+
+.gd-betslip__team {
+  display: grid;
+  justify-items: center;
+  gap: var(--gd-sp-2);
+  min-width: 0;
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-semibold);
+  color: var(--gd-text);
+  text-align: center;
+}
+
+.gd-betslip__vs {
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-xs);
+  font-weight: var(--gd-fw-black);
+  letter-spacing: var(--gd-ls-wider);
+  color: var(--gd-gold-500);
+}
+
+.gd-betslip__meta {
+  margin: 0;
+  text-align: center;
+  font-size: var(--gd-fz-xs);
+  color: var(--gd-text-dim);
+}
+
+.gd-betslip__pick {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gd-sp-3);
+  padding: var(--gd-sp-4);
+  background: var(--gd-surface-2);
+  border: 1px solid var(--gd-border-gold);
+  border-radius: var(--gd-r-md);
+}
+
+.gd-betslip__pick > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gd-betslip__label,
+.gd-betslip__market {
+  font-size: var(--gd-fz-2xs);
+  letter-spacing: var(--gd-ls-wide);
+  text-transform: uppercase;
+  color: var(--gd-text-dim);
+}
+
+.gd-betslip__selection {
+  font-size: var(--gd-fz-lg);
+  font-weight: var(--gd-fw-bold);
+  color: var(--gd-text);
+}
+
+.gd-betslip__odd {
+  padding: var(--gd-sp-2) var(--gd-sp-3);
+  border-radius: var(--gd-r-sm);
+  background-image: var(--gd-grad-gold);
+  color: var(--gd-on-gold);
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-lg);
+  font-weight: var(--gd-fw-black);
+  font-variant-numeric: tabular-nums;
+}
+
+.gd-betslip__form {
+  display: grid;
+  gap: var(--gd-sp-4);
+}
+
+.gd-betslip__win {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gd-sp-3);
+  padding: var(--gd-sp-3) 0;
+  border-top: 1px solid var(--gd-border-soft);
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-muted);
+}
+
+.gd-betslip__win strong {
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-xl);
+  font-weight: var(--gd-fw-black);
+  color: var(--gd-gold-400);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ====================================================== Mis apuestas */
+
+.gd-bets__summary {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--gd-sp-3);
+  margin-bottom: var(--gd-sp-5);
+  list-style: none;
+}
+
+.gd-bets__stat {
+  display: grid;
+  gap: var(--gd-sp-1);
+  padding: var(--gd-sp-4);
+  background: var(--gd-grad-surface);
+  border: 1px solid var(--gd-border);
+  border-radius: var(--gd-r-lg);
+  box-shadow: var(--gd-inset-top);
+  min-width: 0;
+}
+
+.gd-bets__stat span {
+  font-size: var(--gd-fz-xs);
+  letter-spacing: var(--gd-ls-wide);
+  text-transform: uppercase;
+  color: var(--gd-text-muted);
+}
+
+.gd-bets__stat strong {
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-xl);
+  font-weight: var(--gd-fw-black);
+  color: var(--gd-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gd-bets__stat strong.is-win {
+  color: var(--gd-success);
+}
+
+.gd-bets__stat strong.is-lose {
+  color: var(--gd-danger-text);
+}
+
+.gd-bets__panel {
+  display: grid;
+  gap: var(--gd-sp-4);
+}
+
+.gd-bets__empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--gd-sp-3);
+}
+
+.gd-bets__empty .gd-icon {
+  color: var(--gd-gold-500);
+}
+
+.gd-bet-list {
+  display: grid;
+  list-style: none;
+}
+
+.gd-bet-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr) auto;
+  align-items: center;
+  gap: var(--gd-sp-4);
+  padding: var(--gd-sp-4) 0;
+  border-bottom: 1px solid var(--gd-border-soft);
+}
+
+.gd-bet-row:last-child {
+  border-bottom: 0;
+}
+
+.gd-bet-row__main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gd-bet-row__match {
+  font-weight: var(--gd-fw-semibold);
+  color: var(--gd-text);
+}
+
+.gd-bet-row__meta {
+  font-size: var(--gd-fz-xs);
+  color: var(--gd-text-dim);
+}
+
+.gd-bet-row__pick {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--gd-sp-2);
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-soft);
+}
+
+.gd-bet-row__odd {
+  font-family: var(--gd-font-display);
+  font-weight: var(--gd-fw-bold);
+  color: var(--gd-gold-400);
+  font-variant-numeric: tabular-nums;
+}
+
+.gd-bet-row__nums {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gd-sp-3);
+}
+
+.gd-bet-row__nums > div {
+  display: grid;
+  gap: 2px;
+}
+
+.gd-bet-row__nums strong {
+  font-family: var(--gd-font-display);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.gd-bet-row__label {
+  font-size: var(--gd-fz-2xs);
+  letter-spacing: var(--gd-ls-wide);
+  text-transform: uppercase;
+  color: var(--gd-text-dim);
+}
+
+.gd-bet-row__status {
+  justify-self: end;
+}
+
+/* ============================================================ Responsive */
+
+@media (max-width: 1024px) {
+  .gd-bets__summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .gd-bet-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .gd-bet-row__nums {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .gd-bet-row__status {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+  }
+}
+
+@media (max-width: 480px) {
+  .gd-bets__summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

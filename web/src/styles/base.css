@@ -1,0 +1,95 @@
+/* ========================================================================
+   base.css - Elementos base y tipografia
+   Unico archivo donde se permiten selectores de elemento pelados.
+   ======================================================================== */
+
+body {
+  background-color: var(--gd-bg);
+  color: var(--gd-text);
+  font-family: var(--gd-font);
+  font-size: var(--gd-fz-md);
+  line-height: var(--gd-lh-normal);
+  font-weight: var(--gd-fw-regular);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--gd-font-display);
+  font-weight: var(--gd-fw-bold);
+  line-height: var(--gd-lh-tight);
+  letter-spacing: var(--gd-ls-tight);
+  color: var(--gd-text);
+}
+
+a {
+  color: var(--gd-gold-400);
+  text-decoration: none;
+  transition: color var(--gd-t-base) var(--gd-ease-out);
+}
+
+a:hover {
+  color: var(--gd-gold-300);
+}
+
+strong, b {
+  font-weight: var(--gd-fw-bold);
+}
+
+/* --------------------------------------------------------------- Foco
+   Nunca `outline: none` sin reemplazo. El anillo dorado es la unica
+   indicacion de foco de toda la app, asi que se define una sola vez. */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--gd-ring);
+  border-radius: var(--gd-r-sm);
+}
+
+::selection {
+  background: rgba(231, 197, 102, 0.28);
+  color: var(--gd-text);
+}
+
+/* ------------------------------------------------------- Barra de scroll
+   La barra por defecto del sistema sobre una pagina navy se ve pegada. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(231, 197, 102, 0.28) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gd-navy-950);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(231, 197, 102, 0.24);
+  border-radius: var(--gd-r-pill);
+  border: 2px solid var(--gd-navy-950);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(231, 197, 102, 0.42);
+}
+
+/* ------------------------------------------------------------ Autofill
+   Chrome pinta un bloque blanco/azul sobre los inputs autocompletados.
+   No se puede cambiar el background, pero un inset box-shadow enorme
+   lo tapa por completo. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--gd-text);
+  -webkit-box-shadow: 0 0 0 1000px var(--gd-surface-3) inset;
+  caret-color: var(--gd-gold-500);
+  transition: background-color 100000s ease-in-out 0s;
+}
+
+/* Icono del selector de fecha: negro sobre navy es invisible. */
+input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(0.72) sepia(0.4) saturate(3) hue-rotate(5deg);
+  cursor: pointer;
+}

@@ -1,0 +1,37 @@
+{
+  "name": "goldorado",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "GolDorado - Apuestas deportivas de futbol. Microservicios gRPC + BFF REST + React. Donde cada gol vale oro.",
+  "workspaces": [
+    "paquetes/*",
+    "servicios/*",
+    "bff",
+    "web"
+  ],
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n auth,deportes,apuestas,transac,pagos,imagenes,bff,web -c blue,green,yellow,magenta,cyan,white,red,gray \"npm run dev -w @goldorado/ms-autenticacion\" \"npm run dev -w @goldorado/ms-deportes\" \"npm run dev -w @goldorado/ms-apuestas\" \"npm run dev -w @goldorado/ms-transacciones\" \"npm run dev -w @goldorado/ms-pagos\" \"npm run dev -w @goldorado/ms-imagenes\" \"npm run dev -w @goldorado/bff\" \"npm run dev -w @goldorado/web\"",
+    "dev:servicios": "concurrently -k -n auth,deportes,apuestas,transac,pagos,imagenes -c blue,green,yellow,magenta,cyan,white \"npm run dev -w @goldorado/ms-autenticacion\" \"npm run dev -w @goldorado/ms-deportes\" \"npm run dev -w @goldorado/ms-apuestas\" \"npm run dev -w @goldorado/ms-transacciones\" \"npm run dev -w @goldorado/ms-pagos\" \"npm run dev -w @goldorado/ms-imagenes\"",
+    "dev:bff": "npm run dev -w @goldorado/bff",
+    "dev:web": "npm run dev -w @goldorado/web",
+    "start": "concurrently -k -n auth,deportes,apuestas,transac,pagos,imagenes,bff -c blue,green,yellow,magenta,cyan,white,red \"npm start -w @goldorado/ms-autenticacion\" \"npm start -w @goldorado/ms-deportes\" \"npm start -w @goldorado/ms-apuestas\" \"npm start -w @goldorado/ms-transacciones\" \"npm start -w @goldorado/ms-pagos\" \"npm start -w @goldorado/ms-imagenes\" \"npm start -w @goldorado/bff\"",
+    "build": "npm run build -w @goldorado/web",
+    "db:setup": "npm run db:setup --workspaces --if-present",
+    "db:setup:auth": "npm run db:setup -w @goldorado/ms-autenticacion",
+    "db:setup:deportes": "npm run db:setup -w @goldorado/ms-deportes",
+    "db:setup:apuestas": "npm run db:setup -w @goldorado/ms-apuestas",
+    "db:setup:transacciones": "npm run db:setup -w @goldorado/ms-transacciones",
+    "db:setup:pagos": "npm run db:setup -w @goldorado/ms-pagos",
+    "db:setup:imagenes": "npm run db:setup -w @goldorado/ms-imagenes",
+    "test": "npm test --workspaces --if-present",
+    "verificar": "npm run verificar -w @goldorado/bff"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.9"
+  }
+}

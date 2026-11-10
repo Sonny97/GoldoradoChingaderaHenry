@@ -1,0 +1,21 @@
+{
+  "name": "@goldorado/web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Frontend React de GolDorado (mismo diseño del monolito) que consume el BFF.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.2.0",
+    "vite": "^7.3.6"
+  }
+}

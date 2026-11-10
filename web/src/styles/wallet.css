@@ -1,0 +1,503 @@
+/* ========================================================================
+   wallet.css - Billetera, recarga con Wompi y resultado del pago.
+   Solo tokens de variables.css. Tambien define las piezas compartidas por
+   las paginas de cuenta (cabecera de pagina, badge de perdida), porque es
+   el primero de los tres archivos nuevos en la cascada.
+   ======================================================================== */
+
+/* ===================================================== Cabecera de pagina */
+
+.gd-page-head {
+  display: grid;
+  gap: var(--gd-sp-2);
+  margin-bottom: var(--gd-sp-6);
+}
+
+.gd-page-head--split {
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: var(--gd-sp-4);
+}
+
+/* ================================================== Badge de perdida/error */
+
+.gd-badge--lose {
+  --gd-badge-fg: var(--gd-danger-text);
+  --gd-badge-bg: var(--gd-danger-soft);
+  --gd-badge-bd: var(--gd-danger-border);
+}
+
+/* ============================================ Hero: aviso de perfil y saldo */
+
+.gd-welcome__cta {
+  max-width: 62ch;
+  margin-bottom: var(--gd-sp-4);
+}
+
+/* ========================================================= Tarjetas de saldo */
+
+.gd-wallet__balances {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gd-sp-5);
+  margin-bottom: var(--gd-sp-5);
+}
+
+.gd-balance-card {
+  display: grid;
+  gap: var(--gd-sp-2);
+}
+
+.gd-balance-card__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gd-sp-2);
+  font-size: var(--gd-fz-xs);
+  font-weight: var(--gd-fw-semibold);
+  letter-spacing: var(--gd-ls-wider);
+  text-transform: uppercase;
+  color: var(--gd-text-muted);
+}
+
+.gd-balance-card__label .gd-icon {
+  color: var(--gd-gold-500);
+}
+
+.gd-balance-card__value {
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-3xl);
+  font-weight: var(--gd-fw-black);
+  letter-spacing: var(--gd-ls-tighter);
+  line-height: var(--gd-lh-tight);
+  color: var(--gd-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.gd-balance-card--main .gd-balance-card__value {
+  background-image: var(--gd-grad-gold-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gd-balance-card__hint {
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-dim);
+}
+
+/* ================================================== Listas: pagos y libro */
+
+.gd-wallet__lists {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gd-sp-5);
+  margin-top: var(--gd-sp-5);
+}
+
+.gd-wallet__panel {
+  display: grid;
+  align-content: start;
+  gap: var(--gd-sp-4);
+  min-width: 0;
+}
+
+.gd-wallet__panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gd-sp-3);
+}
+
+.gd-wallet__panel-title {
+  font-size: var(--gd-fz-lg);
+  font-weight: var(--gd-fw-bold);
+  color: var(--gd-text);
+}
+
+.gd-wallet__state {
+  display: grid;
+  place-items: center;
+  padding: var(--gd-sp-6) 0;
+}
+
+.gd-wallet__empty {
+  padding: var(--gd-sp-5) 0;
+  text-align: center;
+  color: var(--gd-text-muted);
+  font-size: var(--gd-fz-sm);
+}
+
+.gd-ledger {
+  display: grid;
+  list-style: none;
+}
+
+.gd-ledger__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--gd-sp-3);
+  padding: var(--gd-sp-3) 0;
+  border-bottom: 1px solid var(--gd-border-soft);
+}
+
+.gd-ledger__row:last-child {
+  border-bottom: 0;
+}
+
+.gd-ledger__icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--gd-r-md);
+  background: rgba(231, 197, 102, 0.1);
+  border: 1px solid var(--gd-border);
+  color: var(--gd-gold-400);
+}
+
+.gd-ledger__icon--in {
+  background: var(--gd-success-soft);
+  border-color: var(--gd-success-border);
+  color: var(--gd-success);
+}
+
+.gd-ledger__icon--out {
+  background: var(--gd-surface-3);
+  border-color: var(--gd-border-soft);
+  color: var(--gd-text-muted);
+}
+
+.gd-ledger__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gd-ledger__title {
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-semibold);
+  color: var(--gd-text);
+}
+
+.gd-ledger__meta {
+  font-size: var(--gd-fz-xs);
+  color: var(--gd-text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gd-ledger__side {
+  display: grid;
+  justify-items: end;
+  gap: var(--gd-sp-1);
+}
+
+.gd-ledger__amount {
+  font-family: var(--gd-font-display);
+  font-weight: var(--gd-fw-bold);
+  color: var(--gd-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.gd-ledger__amount.is-in {
+  color: var(--gd-success);
+}
+
+.gd-ledger__amount.is-out {
+  color: var(--gd-text-soft);
+}
+
+/* ============================================================ Recarga */
+
+.gd-deposit {
+  display: grid;
+  gap: var(--gd-sp-5);
+}
+
+.gd-deposit__group {
+  display: grid;
+  gap: var(--gd-sp-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.gd-deposit__amounts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--gd-sp-2);
+}
+
+.gd-amount-chip {
+  padding: var(--gd-sp-3) var(--gd-sp-2);
+  background: var(--gd-surface-2);
+  border: 1px solid var(--gd-border-soft);
+  border-radius: var(--gd-r-md);
+  color: var(--gd-text-soft);
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-bold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: var(--gd-tr-base);
+}
+
+.gd-amount-chip:hover {
+  border-color: var(--gd-border-gold);
+  color: var(--gd-gold-300);
+}
+
+.gd-amount-chip:focus-visible {
+  outline: none;
+  box-shadow: var(--gd-ring);
+}
+
+.gd-amount-chip.is-active {
+  background-image: var(--gd-grad-gold);
+  border-color: transparent;
+  color: var(--gd-on-gold);
+}
+
+/* Pestañas PSE / Otros medios */
+.gd-tabs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--gd-sp-1);
+  padding: var(--gd-sp-1);
+  background: var(--gd-surface-2);
+  border: 1px solid var(--gd-border-soft);
+  border-radius: var(--gd-r-pill);
+}
+
+.gd-tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gd-sp-2);
+  padding: var(--gd-sp-2) var(--gd-sp-3);
+  background: transparent;
+  border: 0;
+  border-radius: var(--gd-r-pill);
+  color: var(--gd-text-muted);
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-semibold);
+  white-space: nowrap;
+  transition: var(--gd-tr-base);
+}
+
+.gd-tabs__tab:hover {
+  color: var(--gd-gold-300);
+}
+
+.gd-tabs__tab:focus-visible {
+  outline: none;
+  box-shadow: var(--gd-ring);
+}
+
+.gd-tabs__tab.is-active {
+  background-image: var(--gd-grad-gold);
+  color: var(--gd-on-gold);
+}
+
+.gd-deposit__panel {
+  display: grid;
+  gap: var(--gd-sp-4);
+}
+
+.gd-deposit__person {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gd-sp-3);
+}
+
+.gd-deposit__legal {
+  display: grid;
+  gap: var(--gd-sp-2);
+  padding: var(--gd-sp-4);
+  background: var(--gd-surface-2);
+  border: 1px solid var(--gd-border);
+  border-radius: var(--gd-r-md);
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-soft);
+}
+
+.gd-deposit__hint {
+  margin: 0;
+  color: var(--gd-text-muted);
+  font-size: var(--gd-fz-sm);
+  line-height: var(--gd-lh-normal);
+}
+
+.gd-deposit__actions {
+  display: grid;
+  gap: var(--gd-sp-3);
+}
+
+.gd-deposit__secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gd-sp-2);
+  margin: 0;
+  font-size: var(--gd-fz-xs);
+  color: var(--gd-text-dim);
+  text-align: center;
+}
+
+.gd-deposit__state {
+  display: grid;
+  justify-items: center;
+  gap: var(--gd-sp-3);
+  padding: var(--gd-sp-6) 0;
+  text-align: center;
+}
+
+.gd-deposit__state-title {
+  margin: 0;
+  font-size: var(--gd-fz-lg);
+  font-weight: var(--gd-fw-bold);
+  color: var(--gd-text);
+}
+
+.gd-deposit__state-text {
+  margin: 0;
+  max-width: 40ch;
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-muted);
+}
+
+/* ===================================================== Resultado del pago */
+
+.gd-payment-result {
+  display: grid;
+  justify-items: center;
+  gap: var(--gd-sp-4);
+  text-align: center;
+}
+
+.gd-payment-result__state {
+  display: grid;
+  justify-items: center;
+  gap: var(--gd-sp-3);
+}
+
+.gd-payment-result__icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 1px solid var(--gd-border-gold);
+  background: rgba(231, 197, 102, 0.1);
+  color: var(--gd-gold-400);
+}
+
+.gd-payment-result__icon--success {
+  border-color: var(--gd-success-border);
+  background: var(--gd-success-soft);
+  color: var(--gd-success);
+  box-shadow: 0 0 26px rgba(47, 191, 113, 0.22);
+}
+
+.gd-payment-result__icon--error {
+  border-color: var(--gd-danger-border);
+  background: var(--gd-danger-soft);
+  color: var(--gd-danger-text);
+}
+
+.gd-payment-result__detail {
+  display: grid;
+  width: 100%;
+  margin: 0;
+  padding: var(--gd-sp-4);
+  background: var(--gd-surface-2);
+  border: 1px solid var(--gd-border-soft);
+  border-radius: var(--gd-r-md);
+  text-align: left;
+}
+
+.gd-payment-result__detail div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--gd-sp-3);
+  padding: var(--gd-sp-2) 0;
+  border-bottom: 1px solid var(--gd-border-soft);
+}
+
+.gd-payment-result__detail div:last-child {
+  border-bottom: 0;
+}
+
+.gd-payment-result__detail dt {
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-muted);
+}
+
+.gd-payment-result__detail dd {
+  margin: 0;
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-semibold);
+  color: var(--gd-text);
+  text-align: right;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.gd-payment-result__ref {
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: var(--gd-fz-xs);
+}
+
+.gd-payment-result__actions {
+  display: grid;
+  justify-items: center;
+  gap: var(--gd-sp-3);
+  width: 100%;
+}
+
+/* ============================================================ Responsive */
+
+@media (max-width: 900px) {
+  .gd-wallet__lists {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .gd-page-head--split {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .gd-wallet__balances {
+    grid-template-columns: 1fr;
+    gap: var(--gd-sp-4);
+  }
+
+  .gd-balance-card__value {
+    font-size: var(--gd-fz-2xl);
+  }
+}
+
+@media (max-width: 480px) {
+  .gd-deposit__amounts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gd-deposit__person {
+    grid-template-columns: 1fr;
+  }
+
+  .gd-ledger__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .gd-ledger__icon {
+    display: none;
+  }
+}

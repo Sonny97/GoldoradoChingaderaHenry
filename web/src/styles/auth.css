@@ -1,0 +1,215 @@
+/* ========================================================================
+   auth.css - Formularios de login, registro y recuperacion
+   ======================================================================== */
+
+.gd-auth-form {
+  display: grid;
+  gap: var(--gd-sp-4);
+}
+
+.gd-auth-form__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gd-sp-3);
+  flex-wrap: wrap;
+  font-size: var(--gd-fz-sm);
+}
+
+/* Tarjeta de credenciales demo. Solo se renderiza en DEV. */
+.gd-demo-hint {
+  display: grid;
+  gap: var(--gd-sp-2);
+  margin-bottom: var(--gd-sp-5);
+  padding: var(--gd-sp-3) var(--gd-sp-4);
+  border: 1px dashed var(--gd-border-gold);
+  border-radius: var(--gd-r-md);
+  background: rgba(231, 197, 102, 0.06);
+  font-size: var(--gd-fz-xs);
+  color: var(--gd-text-muted);
+}
+
+.gd-demo-hint__title {
+  font-weight: var(--gd-fw-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--gd-ls-wide);
+  color: var(--gd-gold-400);
+}
+
+.gd-demo-hint code {
+  font-family: 'Cascadia Mono', Consolas, 'Courier New', monospace;
+  color: var(--gd-gold-300);
+}
+
+.gd-demo-hint__btn {
+  justify-self: start;
+  padding: 4px 10px;
+  background: rgba(231, 197, 102, 0.12);
+  border: 1px solid var(--gd-border-gold);
+  border-radius: var(--gd-r-sm);
+  color: var(--gd-gold-300);
+  font-size: var(--gd-fz-2xs);
+  font-weight: var(--gd-fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--gd-ls-wide);
+  transition: var(--gd-tr-base);
+}
+
+.gd-demo-hint__btn:hover {
+  background: rgba(231, 197, 102, 0.22);
+}
+
+/* ============================================================ Registro */
+
+.gd-register__head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gd-sp-3);
+}
+
+/* El colapso lo decide el ancho del FORMULARIO, no el del viewport: la
+   tarjeta esta topada en 720 px, asi que una media query del viewport
+   dispara en el momento equivocado en tablets. */
+.gd-register__form {
+  container-type: inline-size;
+}
+
+.gd-form-grid {
+  display: grid;
+  /* minmax(0, 1fr) y NO 1fr. Un <select> con etiqueta larga o un
+     type="date" tienen ancho minimo intrinseco: con 1fr la columna se
+     niega a encoger y la tarjeta desborda en horizontal. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gd-sp-4);
+  /* Sin esto, la celda alta de contraseña (input + medidor) estira el
+     input de correo de su misma fila y parece un error de render. */
+  align-items: start;
+}
+
+.gd-form-grid__cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gd-sp-2);
+}
+
+.gd-form-grid__full {
+  grid-column: 1 / -1;
+}
+
+@container (max-width: 620px) {
+  .gd-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gd-register__terms {
+  margin-top: var(--gd-sp-5);
+  font-size: var(--gd-fz-sm);
+}
+
+.gd-register__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--gd-sp-6);
+}
+
+.gd-register__actions .gd-btn {
+  width: min(100%, 320px);
+}
+
+/* ======================================================== Recuperacion */
+
+.gd-recover__options {
+  display: grid;
+  gap: var(--gd-sp-3);
+  margin: var(--gd-sp-5) 0 var(--gd-sp-6);
+}
+
+.gd-recover__identify {
+  display: grid;
+  gap: var(--gd-sp-4);
+  margin-bottom: var(--gd-sp-5);
+}
+
+.gd-recover__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gd-sp-4);
+}
+
+.gd-recover__resend {
+  margin: var(--gd-sp-4) 0 var(--gd-sp-6);
+  text-align: center;
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-muted);
+}
+
+.gd-recover__timer {
+  color: var(--gd-gold-400);
+  font-variant-numeric: tabular-nums;
+}
+
+.gd-recover__link-btn {
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: var(--gd-gold-400);
+  font-weight: var(--gd-fw-medium);
+}
+
+.gd-recover__link-btn:hover {
+  color: var(--gd-gold-300);
+}
+
+.gd-recover__dest {
+  color: var(--gd-gold-300);
+  font-weight: var(--gd-fw-semibold);
+  overflow-wrap: anywhere;
+}
+
+.gd-recover__done {
+  display: grid;
+  gap: var(--gd-sp-4);
+  justify-items: center;
+  text-align: center;
+}
+
+.gd-recover__done-icon {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--gd-success-soft);
+  border: 1px solid var(--gd-success-border);
+  color: var(--gd-success);
+  box-shadow: 0 0 34px rgba(47, 191, 113, 0.22);
+}
+
+/* ========================================================== Responsive */
+
+@media (max-width: 720px) {
+  /* Respaldo por si el navegador no soporta container queries. */
+  .gd-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .gd-register__actions .gd-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .gd-recover__actions {
+    grid-template-columns: 1fr;
+  }
+
+  /* El primario dorado arriba: patron estandar en movil. */
+  .gd-recover__actions > :last-child {
+    order: -1;
+  }
+}

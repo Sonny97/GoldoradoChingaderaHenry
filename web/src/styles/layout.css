@@ -1,0 +1,625 @@
+/* ========================================================================
+   layout.css - Shell, Navbar, UserMenu, Footer, AuthLayout, Wordmark
+   ======================================================================== */
+
+.gd-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* flex:1 hace que el footer se pegue abajo en paginas cortas como /login.
+   Sin esto el footer flota a media pantalla. */
+.gd-main {
+  flex: 1;
+}
+
+/* ============================================================ Wordmark */
+
+.gd-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gd-sp-3);
+  line-height: 1;
+  text-decoration: none;
+  user-select: none;
+}
+
+.gd-wordmark--stacked {
+  flex-direction: column;
+  gap: var(--gd-sp-2);
+}
+
+.gd-wordmark__text {
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-wm-fz, 1.375rem);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.gd-wordmark--sm { --gd-wm-fz: 1.05rem; }
+.gd-wordmark--md { --gd-wm-fz: 1.375rem; }
+.gd-wordmark--lg { --gd-wm-fz: clamp(1.75rem, 1.1rem + 2.2vw, 2.75rem); }
+
+.gd-wordmark__gol {
+  font-weight: var(--gd-fw-black);
+  letter-spacing: var(--gd-ls-tighter);
+  color: var(--gd-text);
+}
+
+/* DORADO en semibold, no black: el dorado en peso pesado y tamaño grande
+   se enloda sobre navy; en semibold se lee como lamina preciosa. */
+.gd-wordmark__gold {
+  position: relative;
+  font-weight: var(--gd-fw-semibold);
+  letter-spacing: var(--gd-ls-tight);
+  background-image: var(--gd-grad-gold-text);
+  background-size: 220% 100%;
+  background-position: 0 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gd-wordmark__gold.is-shimmer {
+  animation: gd-shimmer 5.5s var(--gd-ease-in-out) infinite;
+}
+
+.gd-wordmark__gold::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 2px;
+  background-image: var(--gd-grad-gold);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--gd-t-slow) var(--gd-ease-out);
+}
+
+.gd-wordmark:hover .gd-wordmark__gold::after {
+  transform: scaleX(1);
+}
+
+.gd-logo-mark {
+  filter: drop-shadow(0 2px 8px rgba(231, 197, 102, 0.28));
+}
+
+/* ============================================================== Navbar */
+
+.gd-navbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--gd-z-sticky);
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background-color var(--gd-t-slow) var(--gd-ease-out),
+    border-color var(--gd-t-slow) var(--gd-ease-out),
+    box-shadow var(--gd-t-slow) var(--gd-ease-out);
+}
+
+/* El vidrio al hacer scroll es lo que mas aporta a la lectura premium. */
+.gd-navbar.is-scrolled {
+  background: var(--gd-surface-glass);
+  backdrop-filter: blur(14px) saturate(140%);
+  border-bottom-color: var(--gd-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.gd-navbar__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--gd-sp-6);
+  height: var(--gd-nav-h);
+}
+
+.gd-navbar__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--gd-sp-6);
+  margin-left: auto;
+}
+
+.gd-navbar__links {
+  display: flex;
+  gap: var(--gd-sp-5);
+  list-style: none;
+}
+
+.gd-navbar__links button {
+  position: relative;
+  display: inline-block;
+  padding: var(--gd-sp-2) 0;
+  background: none;
+  border: 0;
+  color: var(--gd-text-soft);
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-medium);
+  letter-spacing: var(--gd-ls-wide);
+  transition: color var(--gd-t-base) var(--gd-ease-out);
+}
+
+.gd-navbar__links button::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  background-image: var(--gd-grad-gold);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--gd-t-base) var(--gd-ease-out);
+}
+
+.gd-navbar__links button:hover {
+  color: var(--gd-text);
+}
+
+.gd-navbar__links button:hover::after {
+  transform: scaleX(1);
+}
+
+.gd-navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--gd-sp-3);
+}
+
+.gd-navbar__burger {
+  display: none;
+}
+
+/* ============================================================ UserMenu */
+
+.gd-user-menu {
+  position: relative;
+}
+
+.gd-user-menu__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--gd-sp-3);
+  padding: 6px 12px 6px 6px;
+  background: transparent;
+  border: 1px solid var(--gd-border-soft);
+  border-radius: var(--gd-r-pill);
+  color: var(--gd-text);
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-medium);
+  transition: var(--gd-tr-base);
+}
+
+.gd-user-menu__trigger:hover {
+  border-color: var(--gd-border-gold);
+  background: rgba(231, 197, 102, 0.06);
+}
+
+.gd-user-menu__caret {
+  transition: transform var(--gd-t-base) var(--gd-ease-out);
+}
+
+.gd-user-menu__trigger[aria-expanded='true'] .gd-user-menu__caret {
+  transform: rotate(180deg);
+}
+
+.gd-user-menu__panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 12px);
+  z-index: var(--gd-z-dropdown);
+  min-width: 236px;
+  display: grid;
+  gap: 2px;
+  padding: var(--gd-sp-2);
+  background-image: var(--gd-grad-surface);
+  border: 1px solid var(--gd-border-gold);
+  border-radius: var(--gd-r-md);
+  box-shadow: var(--gd-shadow-lg);
+  transform-origin: top right;
+  animation: gd-menu-in 160ms var(--gd-ease-out) both;
+}
+
+.gd-user-menu__panel button {
+  display: flex;
+  align-items: center;
+  gap: var(--gd-sp-3);
+  width: 100%;
+  padding: var(--gd-sp-3);
+  background: transparent;
+  border: 0;
+  border-radius: var(--gd-r-sm);
+  color: var(--gd-text-soft);
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-medium);
+  text-align: left;
+  transition: var(--gd-tr-base);
+}
+
+.gd-user-menu__panel button:hover:not(:disabled) {
+  background: rgba(231, 197, 102, 0.1);
+  color: var(--gd-gold-300);
+}
+
+.gd-user-menu__panel button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.gd-user-menu__logout:hover:not(:disabled) {
+  background: var(--gd-danger-soft) !important;
+  color: var(--gd-danger-text) !important;
+}
+
+.gd-user-menu__head {
+  padding: var(--gd-sp-3);
+  border-bottom: 1px solid var(--gd-border-soft);
+  margin-bottom: var(--gd-sp-2);
+}
+
+.gd-user-menu__name {
+  font-size: var(--gd-fz-sm);
+  font-weight: var(--gd-fw-semibold);
+  color: var(--gd-text);
+}
+
+.gd-user-menu__email {
+  font-size: var(--gd-fz-xs);
+  color: var(--gd-text-dim);
+  overflow-wrap: anywhere;
+}
+
+.gd-user-menu__sep {
+  height: 1px;
+  border: 0;
+  margin: var(--gd-sp-2) 0;
+  background: var(--gd-border-soft);
+}
+
+/* ============================================================== Footer */
+
+.gd-footer {
+  position: relative;
+  margin-top: var(--gd-sp-8);
+  background: linear-gradient(180deg, var(--gd-bg) 0%, #030710 100%);
+}
+
+.gd-footer::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background-image: var(--gd-grad-divider);
+}
+
+.gd-footer__grid {
+  display: grid;
+  grid-template-columns: 1.6fr repeat(3, 1fr);
+  gap: var(--gd-sp-7);
+  padding-block: var(--gd-sp-8) var(--gd-sp-6);
+}
+
+.gd-footer__tagline {
+  margin: var(--gd-sp-4) 0 var(--gd-sp-5);
+  font-size: var(--gd-fz-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--gd-ls-wider);
+  color: var(--gd-text-muted);
+}
+
+.gd-footer__social {
+  display: flex;
+  gap: var(--gd-sp-3);
+  list-style: none;
+  margin-bottom: var(--gd-sp-5);
+}
+
+.gd-footer__social a {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--gd-border-soft);
+  border-radius: var(--gd-r-md);
+  color: var(--gd-text-muted);
+  transition: var(--gd-tr-base);
+}
+
+.gd-footer__social a:hover {
+  color: var(--gd-gold-400);
+  border-color: var(--gd-border-gold);
+  background: rgba(231, 197, 102, 0.08);
+  transform: translateY(-3px);
+}
+
+.gd-footer__age {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gd-border-strong);
+  font-family: var(--gd-font-display);
+  font-size: var(--gd-fz-xs);
+  font-weight: var(--gd-fw-bold);
+  color: var(--gd-text-muted);
+}
+
+.gd-footer__title {
+  margin-bottom: var(--gd-sp-4);
+  font-size: var(--gd-fz-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--gd-ls-wider);
+  color: var(--gd-gold-400);
+}
+
+.gd-footer__col ul {
+  display: grid;
+  gap: var(--gd-sp-3);
+  list-style: none;
+}
+
+.gd-footer__col a,
+.gd-footer__col button {
+  padding: 0;
+  background: none;
+  border: 0;
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-muted);
+  text-align: left;
+  text-decoration: none;
+  transition: color var(--gd-t-base) var(--gd-ease-out);
+}
+
+.gd-footer__col a:hover,
+.gd-footer__col button:hover {
+  color: var(--gd-text);
+}
+
+.gd-footer__bar {
+  border-top: 1px solid var(--gd-border-soft);
+  padding-block: var(--gd-sp-4);
+}
+
+.gd-footer__bar-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--gd-sp-3);
+  font-size: var(--gd-fz-xs);
+  color: var(--gd-text-dim);
+}
+
+.gd-footer__legal {
+  color: var(--gd-text-muted);
+}
+
+/* ========================================================== AuthLayout */
+
+.gd-auth {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-block: var(--gd-sp-5) var(--gd-sp-8);
+}
+
+.gd-auth__glow {
+  position: absolute;
+  inset: 0;
+  background-image: var(--gd-grad-hero);
+  pointer-events: none;
+}
+
+.gd-auth__back {
+  position: relative;
+  z-index: 1;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gd-sp-2);
+  margin-left: max(var(--gd-gutter), calc((100vw - var(--gd-container)) / 2));
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-muted);
+}
+
+.gd-auth__back:hover {
+  color: var(--gd-gold-400);
+}
+
+.gd-auth__stage {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--gd-sp-6) var(--gd-gutter) var(--gd-sp-7);
+}
+
+.gd-auth-card {
+  width: min(100%, 460px);
+  border-radius: var(--gd-r-2xl);
+  animation: gd-card-in var(--gd-t-slower) var(--gd-ease-out) both;
+}
+
+.gd-auth--wide .gd-auth-card {
+  width: min(100%, 720px);
+}
+
+.gd-auth-card__avatar {
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto var(--gd-sp-5);
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, var(--gd-navy-700), var(--gd-navy-900));
+  border: 1px solid var(--gd-border-gold);
+  box-shadow: var(--gd-glow-gold), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.gd-auth-card__title {
+  font-size: var(--gd-fz-xl);
+  text-align: center;
+}
+
+.gd-auth-card__title:focus {
+  outline: none;
+}
+
+.gd-auth-card__sub {
+  margin: var(--gd-sp-2) 0 var(--gd-sp-6);
+  text-align: center;
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-muted);
+}
+
+.gd-auth-card__foot {
+  text-align: center;
+  font-size: var(--gd-fz-sm);
+  color: var(--gd-text-muted);
+}
+
+/* ========================================================== Responsive
+   El nav colapsa en 900, no en 768: el wordmark + 4 enlaces + 2 botones
+   se quedan sin espacio alrededor de 900 px. Esperar a 768 deja un nav
+   aplastado durante 130 px de viewport. */
+
+@media (max-width: 900px) {
+  .gd-navbar__burger {
+    display: grid;
+    place-content: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid var(--gd-border-soft);
+    border-radius: var(--gd-r-sm);
+  }
+
+  .gd-navbar__burger span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--gd-text);
+    transition: transform var(--gd-t-base) var(--gd-ease-out),
+      opacity var(--gd-t-fast) var(--gd-ease-out);
+  }
+
+  .gd-navbar.is-open .gd-navbar__burger span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .gd-navbar.is-open .gd-navbar__burger span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .gd-navbar.is-open .gd-navbar__burger span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .gd-navbar__nav {
+    position: fixed;
+    inset: var(--gd-nav-h) 0 auto 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--gd-sp-2);
+    max-height: calc(100dvh - var(--gd-nav-h));
+    padding: var(--gd-sp-4) var(--gd-gutter) var(--gd-sp-6);
+    overflow-y: auto;
+    background: var(--gd-surface);
+    border-bottom: 1px solid var(--gd-border);
+    box-shadow: var(--gd-shadow-lg);
+    transform: translateY(-8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--gd-t-base) var(--gd-ease-out),
+      transform var(--gd-t-base) var(--gd-ease-out);
+  }
+
+  .gd-navbar.is-open .gd-navbar__nav {
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .gd-navbar__links {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .gd-navbar__links button {
+    width: 100%;
+    padding: var(--gd-sp-4) 0;
+    border-bottom: 1px solid var(--gd-border-soft);
+    font-size: var(--gd-fz-md);
+    text-align: left;
+  }
+
+  .gd-navbar__links button::after {
+    display: none;
+  }
+
+  .gd-navbar__actions {
+    flex-direction: column;
+    gap: var(--gd-sp-3);
+    margin-top: var(--gd-sp-4);
+  }
+
+  .gd-navbar__actions .gd-btn {
+    width: 100%;
+  }
+
+  .gd-user-menu {
+    width: 100%;
+  }
+
+  .gd-user-menu__trigger {
+    width: 100%;
+    justify-content: flex-start;
+    border-radius: var(--gd-r-md);
+  }
+
+  .gd-user-menu__panel {
+    position: static;
+    width: 100%;
+    margin-top: var(--gd-sp-2);
+    animation: none;
+  }
+
+  .gd-footer__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gd-sp-6);
+  }
+}
+
+@media (max-width: 600px) {
+  .gd-footer__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gd-footer__bar-inner {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .gd-auth__stage {
+    align-items: start;
+    padding: var(--gd-sp-5) var(--gd-sp-4) var(--gd-sp-7);
+  }
+
+  .gd-auth-card {
+    border-radius: var(--gd-r-lg);
+  }
+
+  .gd-auth-card__avatar {
+    width: 72px;
+    height: 72px;
+  }
+}

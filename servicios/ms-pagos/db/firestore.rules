@@ -1,0 +1,21 @@
+// =============================================================================
+//  Reglas de seguridad de Cloud Firestore para ms-pagos.
+//
+//  NINGUN cliente (navegador, app movil, SDK web) puede leer ni escribir:
+//  todo pasa por ms-pagos, que usa el Admin SDK con una cuenta de servicio y
+//  por eso NO esta sujeto a estas reglas. Un pago contiene datos personales
+//  del pagador (documento, telefono) y el estado del dinero: si el navegador
+//  pudiera escribir `estado: 'APROBADO'` o `acreditado: true`, cualquiera se
+//  recargaria saldo gratis.
+//
+//  Desplegar:  firebase deploy --only firestore:rules --project <FIREBASE_PROJECT_ID>
+// =============================================================================
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{documento=**} {
+      allow read, write: if false;
+    }
+  }
+}
