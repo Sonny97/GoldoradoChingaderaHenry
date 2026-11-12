@@ -228,6 +228,58 @@ export function crearEncuentroRepo({ pool }) {
       );
     },
 
+    /**
+     * ActualizarEncuentro en UNA transaccion: bloquea el encuentro y sus dos
+     * filas de encuentro_equipo (SELECT ... FOR UPDATE), le pasa la fila actual a
+     * `resolver` (regla del servicio: puede lanzar y entonces se hace ROLLBACK) y
+     * escribe estado/minuto en encuentro y los goles de LOCAL y VISITANTE.
+     * Devuelve false si el encuentro no existe (sin escribir nada).
+     */
+    async actualizarEstado(idEncuentro, resolver) {
+      const conexion = await pool.getConnection();
+      try {
+        await conexion.beginTransaction();
+        const [filas] = await conexion.query(
+          `SELECT e.estado, e.minuto, loc.goles AS local_goles, vis.goles AS visita_goles
+           FROM encuentro e
+           LEFT JOIN encuentro_equipo loc ON loc.id_encuentro = e.id_encuentro AND loc.rol = 'LOCAL'
+           LEFT JOIN encuentro_equipo vis ON vis.id_encuentro = e.id_encuentro AND vis.rol = 'VISITANTE'
+           WHERE e.id_encuentro = ?
+           FOR UPDATE`,
+          [Number(idEncuentro)]
+        );
+        if (filas.length === 0) {
+          await conexion.rollback();
+          return false;
+        }
+
+        const nuevo = resolver(filas[0]);
+
+        await conexion.query('UPDATE encuentro SET estado = ?, minuto = ? WHERE id_encuentro = ?', [
+          nuevo.estado,
+          nuevo.minuto,
+          Number(idEncuentro),
+        ]);
+        const [resultado] = await conexion.query(
+          `UPDATE encuentro_equipo
+           SET goles = CASE rol WHEN 'LOCAL' THEN ? WHEN 'VISITANTE' THEN ? END
+           WHERE id_encuentro = ? AND rol IN ('LOCAL', 'VISITANTE')`,
+          [nuevo.golesLocal, nuevo.golesVisitante, Number(idEncuentro)]
+        );
+        if (resultado.affectedRows !== 2) {
+          throw new Error(`El encuentro ${idEncuentro} no tiene sus dos filas LOCAL/VISITANTE`);
+        }
+
+        await conexion.commit();
+        return true;
+      } catch (error) {
+        await conexion.rollback().catch(() => {});
+        throw error;
+      } finally {
+        conexion.release();
+      }
+    },
+
     /** Jornadas del calendario con su temporada y torneo. */
     jornadas({ idTorneo = null, numeroJornada = null } = {}) {
       const condiciones = [];

@@ -31,6 +31,28 @@ function describePick(bet) {
   return bet.selection ?? '';
 }
 
+/** 12.345 -> "12,3"; 100 -> "100" (es-CO usa coma decimal). */
+const formatPercent = (n) => Number(n.toFixed(1)).toLocaleString('es-CO');
+
+/**
+ * Segunda columna de la fila segun como termino la apuesta: la pendiente
+ * muestra lo que podria ganar; la ganada, lo que se pago; la perdida queda
+ * apagada en $ 0; la anulada, el reembolso.
+ */
+function describeOutcome(bet) {
+  const status = String(bet.status ?? '').toUpperCase();
+  if (status === 'GANADA' || status === 'WON') {
+    return { className: 'is-won', label: 'Pagado', value: bet.potentialWin, valueClass: 'gd-bet-row__won' };
+  }
+  if (status === 'PERDIDA' || status === 'LOST') {
+    return { className: 'is-lost', label: 'Ganancia', value: 0, valueClass: 'gd-bet-row__lost' };
+  }
+  if (status === 'ANULADA' || status === 'VOIDED') {
+    return { className: 'is-void', label: 'Reembolsado', value: bet.amount, valueClass: '' };
+  }
+  return { className: '', label: 'Ganancia potencial', value: bet.potentialWin, valueClass: 'gd-text-gold' };
+}
+
 /**
  * /mis-apuestas: resumen del usuario y sus ultimas apuestas.
  */
@@ -42,6 +64,9 @@ export default function MyBetsPage() {
   const bets = useAsync(fetchBets, [], { initialData: [] });
   const stats = summary.data ?? RESUMEN_VACIO;
   const roi = Number(stats.roi) || 0;
+  // Sin apuestas cerradas (ganadas o perdidas) no hay rendimiento que medir:
+  // lo apostado sigue en juego y un "-100%" asustaria sin ser verdad.
+  const hasSettled = Number(stats.won) + Number(stats.lost) > 0;
 
   return (
     <section className="gd-section gd-container gd-bets">
@@ -64,7 +89,7 @@ export default function MyBetsPage() {
         </li>
         <li className="gd-bets__stat">
           <span>Perdidas</span>
-          <strong>{stats.lost}</strong>
+          <strong className={stats.lost > 0 ? 'is-dim' : undefined}>{stats.lost}</strong>
         </li>
         <li className="gd-bets__stat">
           <span>En juego</span>
@@ -76,10 +101,14 @@ export default function MyBetsPage() {
         </li>
         <li className="gd-bets__stat">
           <span>Rendimiento</span>
-          <strong className={roi >= 0 ? 'is-win' : 'is-lose'}>
-            {roi >= 0 ? '+' : ''}
-            {roi}%
-          </strong>
+          {hasSettled ? (
+            <strong className={roi >= 0 ? 'is-win' : 'is-lose'}>
+              {roi >= 0 ? '+' : '−'}
+              {formatPercent(Math.abs(roi))}%
+            </strong>
+          ) : (
+            <strong title="Aún no tienes apuestas liquidadas">—</strong>
+          )}
         </li>
       </ul>
 
@@ -114,9 +143,10 @@ export default function MyBetsPage() {
               const away = nombre(bet.match?.away);
               const title = home && away ? `${home} vs ${away}` : `Partido #${bet.match?.id ?? '—'}`;
               const league = nombre(bet.match?.league);
+              const outcome = describeOutcome(bet);
 
               return (
-                <li key={bet.id} className="gd-bet-row">
+                <li key={bet.id} className={`gd-bet-row ${outcome.className}`.trim()}>
                   <div className="gd-bet-row__main">
                     <span className="gd-bet-row__match">{title}</span>
                     <span className="gd-bet-row__meta">
@@ -137,8 +167,8 @@ export default function MyBetsPage() {
                       <strong>{formatCurrencyCOP(bet.amount)}</strong>
                     </div>
                     <div>
-                      <span className="gd-bet-row__label">Ganancia potencial</span>
-                      <strong className="gd-text-gold">{formatCurrencyCOP(bet.potentialWin)}</strong>
+                      <span className="gd-bet-row__label">{outcome.label}</span>
+                      <strong className={outcome.valueClass}>{formatCurrencyCOP(outcome.value)}</strong>
                     </div>
                   </div>
 

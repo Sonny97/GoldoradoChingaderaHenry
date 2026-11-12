@@ -16,3 +16,12 @@ export async function getWallet() {
 export async function getMovements({ limit = 20, type } = {}) {
   return http.get('/billetera/movimientos', { query: { limite: limit, tipo: type }, auth: true });
 }
+
+/**
+ * Retiro a cuenta bancaria. La transferencia es SIMULADA: ms-apuestas descuenta
+ * el saldo y deja el movimiento RETIRO en el libro, pero no sale dinero real.
+ * -> { reference, amount, balance, lockedBalance, date }
+ */
+export async function requestWithdrawal({ amount, bank, accountType, accountNumber }) {
+  return http.post('/billetera/retiros', { amount, bank, accountType, accountNumber }, { auth: true });
+}

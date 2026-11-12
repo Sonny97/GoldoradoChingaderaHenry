@@ -13,6 +13,7 @@ import ProfilePage from '../pages/ProfilePage';
 import WalletPage from '../pages/WalletPage';
 import MyBetsPage from '../pages/MyBetsPage';
 import PaymentResultPage from '../pages/PaymentResultPage';
+import AdminPage from '../pages/AdminPage';
 import NotFoundPage from '../pages/NotFoundPage';
 
 /**
@@ -53,6 +54,8 @@ export default function AppRoutes() {
           <Route path="billetera" element={<WalletPage />} />
           <Route path="mis-apuestas" element={<MyBetsPage />} />
           <Route path="pagos/resultado" element={<PaymentResultPage />} />
+          {/* Protegida por sesion; el rol lo revisa la pagina (estado amable) y el BFF (403). */}
+          <Route path="admin" element={<AdminPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

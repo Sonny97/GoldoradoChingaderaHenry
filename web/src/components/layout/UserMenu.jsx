@@ -19,6 +19,9 @@ const MENU_LINKS = [
   { to: ROUTES.WALLET, label: 'Billetera', Glyph: Icon.Wallet },
 ];
 
+/** Solo para rol admin: el panel donde se mueven partidos y se liquidan apuestas. */
+const ADMIN_LINK = { to: ROUTES.ADMIN, label: 'Panel de administración', Glyph: Icon.Shield };
+
 export default function UserMenu({ onNavigate }) {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
@@ -77,7 +80,7 @@ export default function UserMenu({ onNavigate }) {
             <div className="gd-user-menu__email">{user.email}</div>
           </div>
 
-          {MENU_LINKS.map(({ to, label, Glyph }) => (
+          {[...MENU_LINKS, ...(user.role === 'admin' ? [ADMIN_LINK] : [])].map(({ to, label, Glyph }) => (
             <Link
               key={to}
               to={to}

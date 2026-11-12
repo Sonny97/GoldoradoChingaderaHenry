@@ -40,6 +40,20 @@ service Deportes {
   rpc ObtenerEncuentrosPorIds (IdsRequest) returns (ListarEncuentrosResponse);
   // Jornadas con sus encuentros (el "calendario").
   rpc ListarCalendario (ListarCalendarioRequest) returns (ListarCalendarioResponse);
+
+  // ADMIN: cambia estado, minuto y marcador de un partido. Reglas: live exige
+  // minuto; finished exige los dos marcadores y borra el minuto; upcoming borra
+  // marcador y minuto; canceled borra el minuto. Un partido finished o canceled
+  // ya no se puede modificar (FAILED_PRECONDITION). NOT_FOUND si no existe.
+  rpc ActualizarEncuentro (ActualizarEncuentroRequest) returns (Encuentro);
+}
+
+message ActualizarEncuentroRequest {
+  int64 id = 1;
+  string estado = 2;                  // live | upcoming | finished | canceled
+  optional int32 minuto = 3;
+  optional int32 goles_local = 4;
+  optional int32 goles_visitante = 5;
 }
 
 message IdRequest {

@@ -14,6 +14,7 @@
 import { randomUUID } from 'node:crypto';
 import { CODIGOS, formatearCOP, invalido, noDisponible, noEncontrado, precondicion } from '@goldorado/comun';
 import { exigirIdUsuario, exigirMontoEntero } from '../utils/validacion.js';
+import { decidirApuesta, ESTADOS_PARTIDO_LIQUIDABLES } from './liquidacion.js';
 
 export const LIMITE_HISTORIAL = 20;
 const LIMITE_HISTORIAL_MAXIMO = 100;
@@ -28,9 +29,14 @@ const LIMITE_HISTORIAL_MAXIMO = 100;
 export function crearServicioApuestas({ repo, deportes, log, generarUuid = randomUUID }) {
   /** Estado del partido segun ms-deportes. NOT_FOUND se respeta; cualquier otra falla es "no disponible". */
   async function estadoDelPartido(idEncuentro) {
+    const encuentro = await leerPartido(idEncuentro);
+    return encuentro?.estado ?? '';
+  }
+
+  /** El Encuentro completo de ms-deportes (estado y marcador), con los mismos errores. */
+  async function leerPartido(idEncuentro) {
     try {
-      const encuentro = await deportes.obtenerEncuentro(idEncuentro);
-      return encuentro?.estado ?? '';
+      return await deportes.obtenerEncuentro(idEncuentro);
     } catch (error) {
       if (error?.code === CODIGOS.NOT_FOUND) throw noEncontrado('Partido no encontrado');
       log?.aviso(`ms-deportes no respondio por el encuentro ${idEncuentro}: ${error?.details || error?.message}`);
@@ -158,5 +164,67 @@ export function crearServicioApuestas({ repo, deportes, log, generarUuid = rando
     return repo.cuotasPorEncuentros(ids);
   }
 
-  return { registrarApuesta, historial, resumen, cuotasPorEncuentros };
+  /**
+   * ADMIN. Liquida las apuestas PENDIENTE de un partido terminado o cancelado.
+   *
+   * ms-deportes es la fuente de verdad del resultado: se lee ANTES de abrir la
+   * transaccion (nunca una llamada de red con filas bloqueadas). Lo que pasa con
+   * cada apuesta lo decide decidirApuesta (tabla pura de liquidacion.js); el
+   * dinero se mueve en el repositorio, en UNA transaccion. Como solo se tocan
+   * apuestas PENDIENTE, una segunda llamada devuelve liquidadas 0 (idempotente).
+   */
+  async function liquidarEncuentro(idEncuentro) {
+    const id = Number(idEncuentro);
+    if (!Number.isSafeInteger(id) || id <= 0) throw invalido('Identificador de partido inválido');
+
+    const partido = await leerPartido(id);
+    const estadoPartido = partido?.estado ?? '';
+    if (!ESTADOS_PARTIDO_LIQUIDABLES.includes(estadoPartido)) {
+      throw precondicion('El partido no ha terminado');
+    }
+    const sinMarcador = (g) => g === null || g === undefined;
+    if (estadoPartido === 'finished' && (sinMarcador(partido.golesLocal) || sinMarcador(partido.golesVisitante))) {
+      throw precondicion('El partido no tiene marcador final');
+    }
+
+    // Evento del libro contable por cada pago (PREMIO o REEMBOLSO). `codigo`
+    // = la referencia del movimiento ('PREMIO-<id_apuesta>'): idempotente en Mongo.
+    const cargaEvento = ({ tipo, codigo, idUsuario, monto, idApuesta, fecha }) => ({
+      codigo,
+      idUsuario,
+      tipo,
+      estado: 'COMPLETADO',
+      monto,
+      moneda: 'COP',
+      origen: 'ms-apuestas',
+      referenciaExterna: `apuesta:${idApuesta}`,
+      ejecutadoPor: 'LIQUIDACION',
+      fecha,
+    });
+
+    const r = await repo.liquidarEncuentro({
+      idEncuentro: id,
+      decidir: (apuesta) => decidirApuesta(apuesta, partido),
+      cargaEvento,
+    });
+
+    if (r.sinDecidir > 0) {
+      log?.aviso(`Encuentro ${id}: ${r.sinDecidir} apuesta(s) de un mercado sin regla de liquidacion quedan PENDIENTE`);
+    }
+    log?.info(
+      `Encuentro ${id} (${estadoPartido}) liquidado: ${r.liquidadas} apuestas, ${r.ganadas} ganadas, ${r.perdidas} perdidas, ${r.anuladas} anuladas, ${formatearCOP(r.totalPremios)} pagados`
+    );
+
+    return {
+      idEncuentro: id,
+      estadoPartido,
+      liquidadas: r.liquidadas,
+      ganadas: r.ganadas,
+      perdidas: r.perdidas,
+      anuladas: r.anuladas,
+      totalPremios: r.totalPremios,
+    };
+  }
+
+  return { registrarApuesta, historial, resumen, cuotasPorEncuentros, liquidarEncuentro };
 }

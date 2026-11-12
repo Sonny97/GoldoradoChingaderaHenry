@@ -25,6 +25,9 @@ export default function HeroWelcome({ user }) {
 
   if (!user) return null;
 
+  const isAdmin = user.role === 'admin';
+  // El admin de la semilla no tiene ficha, pero tampoco apuesta: a el no se
+  // le pide completar el perfil, se le lleva al panel.
   const profileComplete = user.profileComplete !== false;
   const hasBalance = typeof user.balance === 'number';
 
@@ -46,7 +49,15 @@ export default function HeroWelcome({ user }) {
             : `Tienes un bono sin reclamar y ${user.balance > 0 ? 'saldo listo para jugar' : 'una recarga pendiente'}.`}
         </p>
 
-        {!profileComplete ? (
+        {isAdmin ? (
+          <Alert variant="gold" className="gd-welcome__cta">
+            <strong>Cuenta de administrador.</strong> Actualiza marcadores y liquida apuestas desde el{' '}
+            <Link className="gd-link-gold" to={ROUTES.ADMIN}>
+              Panel de administración
+            </Link>
+            .
+          </Alert>
+        ) : !profileComplete ? (
           <Alert variant="gold" className="gd-welcome__cta">
             <strong>Completa tu perfil para apostar y recargar.</strong>{' '}
             Solo te faltan tu documento, tu teléfono y tu fecha de nacimiento.{' '}

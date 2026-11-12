@@ -163,6 +163,20 @@ Todas con sesión.
 | GET | `/api/billetera` | `{ balance, lockedBalance, currency }` |
 | GET | `/api/billetera/movimientos?limite=20&tipo=` | `[{ code, type, status, amount, currency, origin, reference, provider, method, createdAt, updatedAt }]` (libro de MongoDB) |
 
+| POST 🆕 | `/api/billetera/retiros` | `{ amount, bank, accountType: 'AHORROS'|'CORRIENTE', accountNumber }` (sesión + perfil completo; no admin) | 201 `{ reference, amount, balance, lockedBalance, date }` "Retiro registrado" · 400 (monto mínimo $10.000, datos, "Saldo insuficiente"). Transferencia **simulada**. |
+
+## Administración 🆕 — solo rol `admin` (403 "Solo un administrador puede hacer esto")
+
+| Método | Ruta | Cuerpo | Respuesta |
+|---|---|---|---|
+| GET | `/api/admin/encuentros` | — | `[Match]` (todos los estados, igual que `/api/encuentros`) |
+| PATCH | `/api/admin/encuentros/:id` | `{ status, minute?, homeScore?, awayScore? }` | 200 `{ match: Match, settlement: Settlement \| null }`. Si el nuevo estado es `finished` o `canceled`, el BFF llama además `ms-apuestas.LiquidarEncuentro` y devuelve el resultado. 400/404 según ms-deportes. |
+| POST | `/api/admin/encuentros/:id/liquidar` | — | 200 `Settlement` (reintento manual; idempotente) |
+
+`Settlement` = `{ matchId, matchStatus, settled, won, lost, voided, paidOut }`.
+Las apuestas liquidadas aparecen en `/api/apuestas` con `status` `GANADA` / `PERDIDA` / `ANULADA`
+y el resumen (`/api/apuestas/resumen`) cuenta ganadas y rendimiento.
+
 ## Pagos con Wompi 🆕 — `ms-pagos` (Firestore)
 
 | Método | Ruta | Auth | Cuerpo | Respuesta |

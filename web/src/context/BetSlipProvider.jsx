@@ -3,6 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { BetSlipContext } from './BetSlipContext';
 import { useAuth } from '../hooks/useAuth';
 import BetSlipModal from '../components/bets/BetSlipModal';
+import Modal from '../components/ui/Modal';
+import Button from '../components/ui/Button';
+import Alert from '../components/ui/Alert';
 import { ROUTES } from '../utils/constants';
 
 /**
@@ -30,6 +33,9 @@ export function BetSlipProvider({ children }) {
   // { match, odd } o null. Un solo estado: abrir el boleto y saber cual chip
   // resaltar son la misma informacion.
   const [slip, setSlip] = useState(null);
+  // Mensaje cuando el clic en una cuota NO puede abrir el boleto.
+  const [aviso, setAviso] = useState('');
+  const cerrarAviso = useCallback(() => setAviso(''), []);
 
   const openBetSlip = useCallback(
     (match, odd) => {
@@ -40,12 +46,22 @@ export function BetSlipProvider({ children }) {
       if (odd.open === false) return;
 
       if (!user) {
-        navigate(ROUTES.LOGIN, { state: { from: location } });
+        // El aviso viaja en el state: sin el, el usuario aparece en el login
+        // sin saber por que su clic en la cuota "no hizo nada".
+        navigate(ROUTES.LOGIN, { state: { from: location, aviso: 'Inicia sesión para hacer tu apuesta.' } });
+        return;
+      }
+
+      // El administrador no tiene ficha de cliente ni billetera: no apuesta.
+      // Mandarlo a "completar perfil" parecia que el clic no hacia nada (y lo
+      // invitaba a volverse cliente). Se le explica con un aviso.
+      if (user.role === 'admin') {
+        setAviso('Las cuentas de administrador no pueden apostar. Entra con una cuenta de cliente, por ejemplo demo@goldorado.co.');
         return;
       }
 
       if (user.profileComplete === false) {
-        navigate(ROUTES.COMPLETE_PROFILE, { state: { from: location } });
+        navigate(ROUTES.COMPLETE_PROFILE, { state: { from: location, aviso: 'Completa tu perfil para poder apostar.' } });
         return;
       }
 
@@ -80,6 +96,18 @@ export function BetSlipProvider({ children }) {
           onClose={closeBetSlip}
         />
       ) : null}
+      <Modal
+        open={Boolean(aviso)}
+        onClose={cerrarAviso}
+        title="No puedes apostar con esta cuenta"
+        footer={
+          <Button variant="gold" onClick={cerrarAviso} data-autofocus>
+            Entendido
+          </Button>
+        }
+      >
+        <Alert variant="info">{aviso}</Alert>
+      </Modal>
     </BetSlipContext.Provider>
   );
 }

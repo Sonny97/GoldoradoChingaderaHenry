@@ -220,6 +220,25 @@ export function crearReposFalsos() {
       anotar('alineacion', id);
       return id === 1 ? FILAS_ALINEACION : [];
     },
+    /** Como el real: le pasa la fila actual a `resolver` y, si no lanza, la modifica. */
+    async actualizarEstado(id, resolver) {
+      anotar('actualizarEstado', id);
+      const fila = encuentros.find((e) => e.id_encuentro === id);
+      if (!fila) return false;
+      const nuevo = resolver({
+        estado: fila.estado,
+        minuto: fila.minuto,
+        local_goles: fila.local_goles,
+        visita_goles: fila.visita_goles,
+      });
+      Object.assign(fila, {
+        estado: nuevo.estado,
+        minuto: nuevo.minuto,
+        local_goles: nuevo.golesLocal,
+        visita_goles: nuevo.golesVisitante,
+      });
+      return true;
+    },
     async jornadas(filtros) {
       anotar('jornadas', filtros);
       return FILAS_JORNADA;

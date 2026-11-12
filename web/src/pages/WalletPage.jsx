@@ -10,6 +10,7 @@ import Alert from '../components/ui/Alert';
 import Spinner from '../components/ui/Spinner';
 import Icon from '../components/ui/icons';
 import DepositModal from '../components/wallet/DepositModal';
+import WithdrawModal from '../components/wallet/WithdrawModal';
 import StatusBadge from '../components/wallet/StatusBadge';
 import { formatBalance, formatCurrencyCOP, formatDateTime } from '../utils/format';
 import { ROUTES } from '../utils/constants';
@@ -58,6 +59,7 @@ export default function WalletPage() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [depositOpen, setDepositOpen] = useState(() => searchParams.get('recargar') === '1');
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   const fetchWallet = useCallback(() => walletService.getWallet(), []);
   const fetchPayments = useCallback(() => paymentService.listPayments({ limit: 10 }), []);
@@ -73,7 +75,21 @@ export default function WalletPage() {
     if (searchParams.has('recargar')) setSearchParams({}, { replace: true });
   }, [searchParams, setSearchParams]);
 
+  const closeWithdraw = useCallback(() => setWithdrawOpen(false), []);
+
+  // Retiro hecho: saldo y libro cambian, se recargan los dos (el modal sigue
+  // mostrando el comprobante hasta que el usuario lo cierre).
+  const { reload: reloadWallet } = wallet;
+  const { reload: reloadMovements } = movements;
+  const handleWithdrawn = useCallback(() => {
+    reloadWallet();
+    reloadMovements();
+  }, [reloadWallet, reloadMovements]);
+
   const profileComplete = user?.profileComplete !== false;
+  // Las cuentas de administrador no juegan con dinero: el BFF les rechaza el
+  // retiro con 403, asi que ni se ofrece.
+  const isAdmin = user?.role === 'admin';
 
   // Si /billetera falla, el saldo de /auth/me es el respaldo: viene del mismo
   // ms-apuestas, solo que leido al iniciar sesion.
@@ -92,14 +108,26 @@ export default function WalletPage() {
         </div>
 
         {profileComplete ? (
-          <Button
-            variant="gold"
-            size="lg"
-            iconLeft={<Icon.Plus size={18} />}
-            onClick={() => setDepositOpen(true)}
-          >
-            Recargar
-          </Button>
+          <div className="gd-wallet__actions">
+            {!isAdmin ? (
+              <Button
+                variant="outline"
+                size="lg"
+                iconLeft={<Icon.Bank size={18} />}
+                onClick={() => setWithdrawOpen(true)}
+              >
+                Retirar
+              </Button>
+            ) : null}
+            <Button
+              variant="gold"
+              size="lg"
+              iconLeft={<Icon.Plus size={18} />}
+              onClick={() => setDepositOpen(true)}
+            >
+              Recargar
+            </Button>
+          </div>
         ) : (
           <Button as={Link} to={ROUTES.COMPLETE_PROFILE} variant="gold" size="lg">
             Completa tu perfil para recargar
@@ -229,6 +257,12 @@ export default function WalletPage() {
       </div>
 
       <DepositModal open={depositOpen && profileComplete} onClose={closeDeposit} />
+      <WithdrawModal
+        open={withdrawOpen && profileComplete && !isAdmin}
+        onClose={closeWithdraw}
+        available={balance}
+        onSuccess={handleWithdrawn}
+      />
     </section>
   );
 }

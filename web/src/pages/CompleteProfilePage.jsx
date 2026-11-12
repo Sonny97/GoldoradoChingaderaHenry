@@ -47,6 +47,7 @@ export default function CompleteProfilePage() {
           {location.state?.nuevo ? '¡Bienvenido a GolDorado! ' : ''}
           Necesitamos unos datos más para que puedas recargar y apostar.
         </p>
+        {location.state?.aviso ? <Alert variant="gold">{location.state.aviso}</Alert> : null}
 
         {user?.email ? (
           <Alert variant="info" className="gd-complete__email">

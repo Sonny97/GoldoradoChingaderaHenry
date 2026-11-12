@@ -4,6 +4,7 @@ import LoginForm from '../components/auth/LoginForm';
 import SocialLogin from '../components/auth/SocialLogin';
 import Card from '../components/ui/Card';
 import Divider from '../components/ui/Divider';
+import Alert from '../components/ui/Alert';
 import { LogoMark } from '../components/layout/Wordmark';
 import { ROUTES, DEMO_CREDENTIALS } from '../utils/constants';
 
@@ -26,6 +27,8 @@ export default function LoginPage() {
 
         <h1 className="gd-auth-card__title">Iniciar sesión</h1>
         <p className="gd-auth-card__sub">Ingresa a tu cuenta GolDorado</p>
+
+        {location.state?.aviso ? <Alert variant="gold">{location.state.aviso}</Alert> : null}
 
         {/* Solo en desarrollo: en build de produccion este bloque desaparece. */}
         {import.meta.env.DEV ? (

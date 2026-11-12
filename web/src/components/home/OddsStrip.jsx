@@ -22,7 +22,7 @@ export default function OddsStrip({ odds = [], matchLabel = '', selected, onSele
             className={`gd-odd ${selected === odd.key ? 'is-active' : ''} ${closed ? 'is-closed' : ''}`.trim()}
             aria-pressed={selected === odd.key}
             aria-label={closed ? `${odd.label}, cuota cerrada` : `${odd.label}, paga ${odd.value}`}
-            title={closed ? 'Cuota cerrada' : undefined}
+            title={closed ? 'Cuota cerrada: el partido ya terminó y no admite apuestas' : undefined}
             disabled={closed}
             onClick={() => onSelect?.(odd)}
           >

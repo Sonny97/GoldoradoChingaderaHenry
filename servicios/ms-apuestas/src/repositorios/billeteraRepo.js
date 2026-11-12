@@ -7,7 +7,7 @@
  * falta, en vez de confiar en que el registro la creo.
  */
 
-import { aNumero } from '@goldorado/comun';
+import { aFechaHoraIso, aNumero } from '@goldorado/comun';
 
 const COLUMNAS = 'id_usuario, saldo_disponible, saldo_bloqueado, moneda';
 
@@ -99,5 +99,46 @@ export function crearRepoBilletera({ consultar, enTransaccion }) {
     });
   }
 
-  return { asegurar, obtener, acreditarDeposito };
+  /**
+   * Retiro (transferencia simulada) en UNA transaccion, con la misma regla de
+   * RegistrarApuesta: la condicion del saldo va DENTRO del UPDATE
+   * (saldo_disponible >= $2), nunca en un SELECT previo. Despues el diario
+   * (RETIRO) y el evento del libro contable en la bandeja de salida.
+   *
+   * `cargaEvento({ fecha })` lo arma el servicio (y ya trae la cuenta enmascarada:
+   * aqui nunca llega el numero completo). Devuelve null si no habia saldo.
+   */
+  async function solicitarRetiro({ idUsuario, monto, referencia, proveedor, metodo, cargaEvento }) {
+    return enTransaccion(async (tx) => {
+      await tx.query(SQL_ASEGURAR, [idUsuario]);
+
+      const { rows, rowCount } = await tx.query(
+        `UPDATE cuenta_saldo
+            SET saldo_disponible = saldo_disponible - $2,
+                actualizado_en   = now()
+          WHERE id_usuario = $1
+            AND saldo_disponible >= $2
+         RETURNING ${COLUMNAS}`,
+        [idUsuario, monto]
+      );
+      if (rowCount === 0) return null;
+
+      const mov = await tx.query(
+        `INSERT INTO movimiento_saldo (id_usuario, tipo, monto, saldo_disponible_resultante,
+                                       referencia, proveedor, metodo)
+         VALUES ($1, 'RETIRO', $2, $3, $4, $5, $6)
+         RETURNING creado_en`,
+        [idUsuario, monto, rows[0].saldo_disponible, referencia, proveedor, metodo]
+      );
+      const fecha = aFechaHoraIso(mov.rows[0].creado_en);
+
+      await tx.query(`INSERT INTO evento_salida (tipo, carga) VALUES ('TRANSACCION', $1::jsonb)`, [
+        JSON.stringify(cargaEvento({ fecha })),
+      ]);
+
+      return { billetera: aBilletera(rows[0]), fecha };
+    });
+  }
+
+  return { asegurar, obtener, acreditarDeposito, solicitarRetiro };
 }

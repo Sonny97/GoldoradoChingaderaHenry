@@ -38,6 +38,7 @@ export const ROUTES = {
   WALLET: '/billetera',
   MY_BETS: '/mis-apuestas',
   PAYMENT_RESULT: '/pagos/resultado',
+  ADMIN: '/admin',
 };
 
 /**
@@ -98,4 +99,24 @@ export const MATCH_STATUS = {
   UPCOMING: 'upcoming',
   LIVE: 'live',
   FINISHED: 'finished',
+  CANCELED: 'canceled',
+};
+
+/** Retiros (transferencia simulada). Los limites reales los aplica ms-apuestas. */
+export const MIN_WITHDRAWAL_AMOUNT = 10000;
+export const WITHDRAWAL_BANKS = [
+  'Bancolombia',
+  'Banco de Bogotá',
+  'Davivienda',
+  'BBVA Colombia',
+  'Banco de Occidente',
+  'Banco Popular',
+  'Scotiabank Colpatria',
+  'Banco AV Villas',
+  'Nequi',
+  'Daviplata',
+];
+export const ACCOUNT_TYPES = {
+  SAVINGS: 'AHORROS',
+  CHECKING: 'CORRIENTE',
 };

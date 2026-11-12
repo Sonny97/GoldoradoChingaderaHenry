@@ -498,6 +498,92 @@ describe('BFF de punta a punta (servicios falsos)', () => {
     assert.equal((await pedir('/api/auth/me', { token: b })).status, 401);
   });
 
+  it('admin: 401 sin sesion, 403 para un cliente; lista con todos los estados', async () => {
+    assert.equal((await pedir('/api/admin/encuentros')).status, 401);
+    const cliente = await pedir('/api/admin/encuentros', { token: tokenDemo });
+    assert.equal(cliente.status, 403);
+    assert.equal(cliente.json.message, 'Solo un administrador puede hacer esto');
+    assert.equal((await pedir('/api/admin/encuentros/1/liquidar', { metodo: 'POST', token: tokenDemo })).status, 403);
+
+    const admin = (await login('admin@goldorado.co', 'Admin2026#')).json.data.token;
+    const lista = await pedir('/api/admin/encuentros', { token: admin });
+    assert.equal(lista.status, 200);
+    assert.deepEqual(lista.json.data.map((m) => m.status).sort(), ['finished', 'live', 'upcoming']);
+    assert.ok(lista.json.data.find((m) => m.id === 1).odds.length > 0);
+  });
+
+  it('admin: PATCH valida, actualiza en vivo sin liquidar y finished liquida', async () => {
+    const admin = (await login('admin@goldorado.co', 'Admin2026#')).json.data.token;
+    const malo = await pedir('/api/admin/encuentros/1', { metodo: 'PATCH', token: admin, cuerpo: { status: 'jugando' } });
+    assert.equal(malo.status, 400);
+    assert.equal((await pedir('/api/admin/encuentros/1', { metodo: 'PATCH', token: admin, cuerpo: { status: 'live', minute: -3 } })).status, 400);
+    assert.equal((await pedir('/api/admin/encuentros/999', { metodo: 'PATCH', token: admin, cuerpo: { status: 'live' } })).status, 404);
+
+    const vivo = await pedir('/api/admin/encuentros/1', { metodo: 'PATCH', token: admin, cuerpo: { status: 'live', minute: 80, homeScore: 2, awayScore: 1 } });
+    assert.equal(vivo.status, 200);
+    assert.equal(vivo.json.data.settlement, null);
+    assert.equal(vivo.json.data.match.minute, 80);
+    assert.equal(vivo.json.data.match.homeScore, 2);
+
+    const antes = (await pedir('/api/billetera', { token: tokenDemo })).json.data;
+    const fin = await pedir('/api/admin/encuentros/1', { metodo: 'PATCH', token: admin, cuerpo: { status: 'finished', homeScore: 2, awayScore: 1 } });
+    assert.equal(fin.status, 200);
+    assert.equal(fin.json.data.match.status, 'finished');
+    assert.ok(fin.json.data.match.homeTeam.crestUrl, 'match hidratado con escudos');
+    assert.deepEqual(fin.json.data.settlement, { matchId: 1, matchStatus: 'finished', settled: 1, won: 1, lost: 0, voided: 0, paidOut: 100000 });
+    const despues = (await pedir('/api/billetera', { token: tokenDemo })).json.data;
+    assert.equal(despues.balance, antes.balance + 100000);
+    assert.equal(despues.lockedBalance, antes.lockedBalance - 50000);
+
+    // Idempotente: liquidar otra vez no toca nada.
+    const otra = await pedir('/api/admin/encuentros/1/liquidar', { metodo: 'POST', token: admin });
+    assert.equal(otra.status, 200);
+    assert.equal(otra.json.data.settled, 0);
+  });
+
+  it('admin: si la liquidacion falla el partido queda guardado y se puede reintentar', async () => {
+    const admin = (await login('admin@goldorado.co', 'Admin2026#')).json.data.token;
+    falsos.datos.registro.fallarLiquidacion = true;
+    const r = await pedir('/api/admin/encuentros/5', { metodo: 'PATCH', token: admin, cuerpo: { status: 'canceled' } });
+    falsos.datos.registro.fallarLiquidacion = false;
+    assert.equal(r.status, 200);
+    assert.equal(r.json.data.match.status, 'canceled');
+    assert.equal(r.json.data.settlement, null);
+    assert.match(r.json.message, /Reintenta la liquidación/);
+
+    const reintento = await pedir('/api/admin/encuentros/5/liquidar', { metodo: 'POST', token: admin });
+    assert.equal(reintento.status, 200);
+    assert.deepEqual(reintento.json.data, { matchId: 5, matchStatus: 'canceled', settled: 1, won: 0, lost: 0, voided: 1, paidOut: 5000 });
+    assert.equal(falsos.datos.apuestas.find((a) => a.idEncuentro === 5).estado, 'ANULADA');
+  });
+
+  it('retiros: 201 descuenta saldo; 400 por monto y cuenta; 403 admin', async () => {
+    const cuerpo = { amount: 10000, bank: 'Bancolombia', accountType: 'AHORROS', accountNumber: '12345678901' };
+    const antes = (await pedir('/api/billetera', { token: tokenDemo })).json.data;
+    const r = await pedir('/api/billetera/retiros', { metodo: 'POST', token: tokenDemo, cuerpo });
+    assert.equal(r.status, 201);
+    assert.equal(r.json.message, 'Retiro registrado');
+    assert.deepEqual(Object.keys(r.json.data).sort(), ['amount', 'balance', 'date', 'lockedBalance', 'reference']);
+    assert.match(r.json.data.reference, /^RET-1-/);
+    assert.equal(r.json.data.balance, antes.balance - 10000);
+    assert.deepEqual(falsos.datos.registro.retiros.at(-1), { idUsuario: 1, monto: 10000, banco: 'Bancolombia', tipoCuenta: 'AHORROS', numeroCuenta: '12345678901' });
+
+    const poco = await pedir('/api/billetera/retiros', { metodo: 'POST', token: tokenDemo, cuerpo: { ...cuerpo, amount: 5000 } });
+    assert.equal(poco.status, 400);
+    assert.equal(poco.json.message, 'El monto mínimo de retiro es $10.000');
+    const cuenta = await pedir('/api/billetera/retiros', { metodo: 'POST', token: tokenDemo, cuerpo: { ...cuerpo, accountNumber: '12ab' } });
+    assert.equal(cuenta.status, 400);
+    const saldo = await pedir('/api/billetera/retiros', { metodo: 'POST', token: tokenDemo, cuerpo: { ...cuerpo, amount: 99999999 } });
+    assert.equal(saldo.status, 400);
+    assert.equal(saldo.json.message, 'Saldo insuficiente');
+
+    const admin = (await login('admin@goldorado.co', 'Admin2026#')).json.data.token;
+    const deAdmin = await pedir('/api/billetera/retiros', { metodo: 'POST', token: admin, cuerpo });
+    assert.equal(deAdmin.status, 403);
+    assert.equal(deAdmin.json.message, 'Las cuentas de administrador no pueden retirar');
+    assert.equal((await pedir('/api/billetera/retiros', { metodo: 'POST', cuerpo })).status, 401);
+  });
+
   it('degradacion: sin ms-apuestas ni ms-imagenes los partidos salen sin cuotas ni escudos', async () => {
     await falsos.detener('apuestas');
     await falsos.detener('imagenes');

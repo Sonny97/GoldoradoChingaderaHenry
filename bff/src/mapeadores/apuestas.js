@@ -105,3 +105,27 @@ export function aBilletera(b) {
     currency: b.moneda || 'COP',
   };
 }
+
+/** RetiroResponse -> lo que recibe la pantalla de billetera tras un retiro. */
+export function aRetiro(r) {
+  return {
+    reference: r.referencia,
+    amount: Number(r.monto),
+    balance: Number(r.billetera?.saldoDisponible ?? 0),
+    lockedBalance: Number(r.billetera?.saldoBloqueado ?? 0),
+    date: r.fecha || null,
+  };
+}
+
+/** LiquidacionResponse -> Settlement (panel de administracion). */
+export function aSettlement(r) {
+  return {
+    matchId: Number(r.idEncuentro),
+    matchStatus: r.estadoPartido,
+    settled: Number(r.liquidadas ?? 0),
+    won: Number(r.ganadas ?? 0),
+    lost: Number(r.perdidas ?? 0),
+    voided: Number(r.anuladas ?? 0),
+    paidOut: Number(r.totalPremios ?? 0),
+  };
+}

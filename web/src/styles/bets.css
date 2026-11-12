@@ -335,3 +335,28 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* ================================== Apuestas liquidadas: ganada, perdida, anulada */
+
+.gd-bets__stat strong.is-dim {
+  color: var(--gd-text-muted);
+}
+
+.gd-bet-row.is-won .gd-bet-row__match,
+.gd-bet-row__won {
+  color: var(--gd-success);
+}
+
+.gd-bet-row.is-lost .gd-bet-row__main,
+.gd-bet-row.is-lost .gd-bet-row__nums {
+  opacity: 0.6;
+}
+
+.gd-bet-row__lost {
+  color: var(--gd-text-dim);
+}
+
+.gd-bet-row.is-void .gd-bet-row__main,
+.gd-bet-row.is-void .gd-bet-row__nums {
+  opacity: 0.75;
+}

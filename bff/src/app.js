@@ -24,6 +24,7 @@ import { crearGuardas } from './middleware/autenticar.js';
 import { idSolicitud } from './middleware/idSolicitud.js';
 import { crearLimites } from './middleware/limites.js';
 import { noEncontrado } from './middleware/noEncontrado.js';
+import { crearRutasAdmin } from './rutas/admin.js';
 import { crearRutasApuestas } from './rutas/apuestas.js';
 import { crearRutasAuth } from './rutas/auth.js';
 import { crearRutasBilletera } from './rutas/billetera.js';
@@ -104,6 +105,7 @@ export function crearApp({ env, clientes, log }) {
   app.use('/api/billetera', crearRutasBilletera(dependencias));
   app.use('/api/pagos', crearRutasPagos(dependencias));
   app.use('/api/imagenes', crearRutasImagenes(dependencias));
+  app.use('/api/admin', crearRutasAdmin(dependencias));
 
   // Estos dos van de ULTIMOS y en este orden. El 404 tiene que ir despues de
   // todas las rutas reales, y el manejador de errores despues de todo.

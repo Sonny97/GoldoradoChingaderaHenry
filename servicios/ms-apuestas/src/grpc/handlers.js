@@ -140,6 +140,30 @@ export function crearHandlers({ apuestas, billetera, promociones, salud }) {
       return { aplicado: Boolean(r.aplicado), billetera: aBilletera(r.billetera) };
     },
 
+    async SolicitarRetiro({ idUsuario, monto, banco, tipoCuenta, numeroCuenta }) {
+      const r = await billetera.solicitarRetiro({ idUsuario, monto, banco, tipoCuenta, numeroCuenta });
+      return {
+        referencia: texto(r.referencia),
+        monto: numero(r.monto),
+        billetera: aBilletera(r.billetera),
+        fecha: texto(r.fecha),
+      };
+    },
+
+    // ----------------------------------------------------------- liquidacion
+    async LiquidarEncuentro({ idEncuentro }) {
+      const r = await apuestas.liquidarEncuentro(idEncuentro);
+      return {
+        idEncuentro: r.idEncuentro,
+        estadoPartido: texto(r.estadoPartido),
+        liquidadas: numero(r.liquidadas),
+        ganadas: numero(r.ganadas),
+        perdidas: numero(r.perdidas),
+        anuladas: numero(r.anuladas),
+        totalPremios: numero(r.totalPremios),
+      };
+    },
+
     // ----------------------------------------------------------- promociones
     async ListarPromociones({ limite, excluirDestacada }) {
       const lista = await promociones.listar({ limite, excluirDestacada });

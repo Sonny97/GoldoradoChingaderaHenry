@@ -13,7 +13,15 @@
 import { invalido, noEncontrado } from '@goldorado/comun';
 
 import * as mapear from './mapeadores.js';
-import { filtroDeEstado, idPositivo, idsValidos, limiteDestacados, limiteListado } from './reglas.js';
+import {
+  filtroDeEstado,
+  idPositivo,
+  idsValidos,
+  limiteDestacados,
+  limiteListado,
+  resolverActualizacion,
+  validarActualizacion,
+} from './reglas.js';
 
 export function crearServicioDeportes({ catalogoRepo, encuentroRepo }) {
   /** Colores de todos los equipos que aparecen en las filas, de una sola vez. */
@@ -113,6 +121,22 @@ export function crearServicioDeportes({ catalogoRepo, encuentroRepo }) {
         estadisticas: mapear.aEstadisticas(estadistica),
         alineacion: alineacion.map(mapear.aJugadorAlineado),
       };
+    },
+
+    /**
+     * ADMIN: cambia estado, minuto y marcador. Valida el pedido ANTES de abrir
+     * la transaccion; la regla "terminado/cancelado no cambia" se aplica con la
+     * fila bloqueada, dentro de la transaccion del repositorio. Devuelve el
+     * Encuentro completo, igual que ObtenerEncuentro.
+     */
+    async actualizarEncuentro({ id, estado, minuto, golesLocal, golesVisitante } = {}) {
+      const idEncuentro = exigirId(id, 'Identificador de partido inválido');
+      const pedido = validarActualizacion({ estado, minuto, golesLocal, golesVisitante });
+      const existe = await encuentroRepo.actualizarEstado(idEncuentro, (actual) =>
+        resolverActualizacion(actual, pedido)
+      );
+      if (!existe) throw noEncontrado('Partido no encontrado');
+      return obtenerEncuentro(idEncuentro);
     },
 
     /** Para hidratar el historial de apuestas: los ids que no existen no vienen. */

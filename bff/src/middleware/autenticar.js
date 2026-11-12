@@ -85,11 +85,17 @@ export function crearGuardas({ clientes, log }) {
   return { autenticar, autenticarOpcional };
 }
 
+/**
+ * requiereRol('admin')  o  requiereRol('admin', { mensaje: '...' }) para un 403
+ * con texto propio (el ultimo argumento puede ser un objeto de opciones).
+ */
 export function requiereRol(...roles) {
+  const opcionesRol = typeof roles.at(-1) === 'object' ? roles.pop() : {};
+  const mensaje = opcionesRol?.mensaje ?? 'No tienes permiso para hacer esto';
   const permitidos = new Set(roles.map((r) => r.toLowerCase()));
   return (req, res, next) => {
     if (!req.usuario || !permitidos.has(req.usuario.rol)) {
-      return res.status(403).json(fail('No tienes permiso para hacer esto'));
+      return res.status(403).json(fail(mensaje));
     }
     return next();
   };

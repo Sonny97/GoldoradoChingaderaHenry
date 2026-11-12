@@ -119,7 +119,7 @@ function datosSemilla() {
       ['img-promo-1', { id: 'img-promo-1', nombre: 'promo.webp', tipoMime: 'image/webp', entidad: 'promocion', idEntidad: '1', creadoEn: '2026-11-01T00:00:00.000Z', contenido: Buffer.from([1, 2, 3]) }],
     ]),
     // Lo que recibieron los falsos, para que las pruebas lo revisen.
-    registro: { contextos: [], billeterasAseguradas: [], pagadores: [], oauth: null, eventos: [], idsSolicitud: new Set() },
+    registro: { contextos: [], billeterasAseguradas: [], pagadores: [], oauth: null, eventos: [], idsSolicitud: new Set(), retiros: [], fallarLiquidacion: false },
   };
 }
 
@@ -301,6 +301,16 @@ function deportes(d) {
     async ListarJugadores() {
       return { jugadores: [{ id: 1, idEquipo: 1, nombres: 'Santiago', apellidos: 'Bermúdez', posicion: 'DELANTERO', dorsal: 9, fechaNacimiento: '2000-01-01', activo: true, equipo: 'Millonarios' }] };
     },
+    async ActualizarEncuentro(req) {
+      const e = d.encuentros.find((x) => x.id === req.id);
+      if (!e) throw noEncontrado('Partido no encontrado');
+      if (e.estado === 'finished' || e.estado === 'canceled') throw precondicion('El partido ya terminó y no se puede modificar');
+      e.estado = req.estado;
+      if (req.minuto !== undefined) e.minuto = req.minuto;
+      if (req.golesLocal !== undefined) e.golesLocal = req.golesLocal;
+      if (req.golesVisitante !== undefined) e.golesVisitante = req.golesVisitante;
+      return e;
+    },
     async ListarEstadios() {
       return { estadios: [{ id: 1, nombre: 'El Campín', ciudad: 'Bogotá', pais: 'Colombia', capacidad: 36343 }] };
     },
@@ -345,6 +355,43 @@ function apuestas(d) {
       const b = d.billeteras.get(req.idUsuario);
       if (!b) throw noEncontrado('El usuario no tiene billetera');
       return b;
+    },
+    async SolicitarRetiro(req) {
+      if (!Number.isInteger(req.monto) || req.monto < 10000) throw invalido('El monto mínimo de retiro es $10.000');
+      const b = d.billeteras.get(req.idUsuario);
+      if (!b || b.saldoDisponible < req.monto) throw precondicion('Saldo insuficiente');
+      b.saldoDisponible -= req.monto;
+      d.registro.retiros.push({ ...req });
+      return { referencia: `RET-${req.idUsuario}-${Date.now()}`, monto: req.monto, billetera: b, fecha: new Date().toISOString() };
+    },
+    async LiquidarEncuentro(req) {
+      if (d.registro.fallarLiquidacion) throw new Error('liquidacion caida (prueba)');
+      // Comparte `d` con el falso de deportes: lee el resultado de ahi.
+      const e = d.encuentros.find((x) => x.id === req.idEncuentro);
+      if (!e) throw noEncontrado('Partido no encontrado');
+      if (e.estado !== 'finished' && e.estado !== 'canceled') throw precondicion('El partido no ha terminado');
+      const resultado = e.golesLocal > e.golesVisitante ? 'Local' : e.golesLocal < e.golesVisitante ? 'Visita' : 'Empate';
+      const r = { idEncuentro: e.id, estadoPartido: e.estado, liquidadas: 0, ganadas: 0, perdidas: 0, anuladas: 0, totalPremios: 0 };
+      for (const a of d.apuestas.filter((x) => x.idEncuentro === e.id && x.estado === 'PENDIENTE')) {
+        const b = d.billeteras.get(a.idUsuario);
+        b.saldoBloqueado -= a.monto;
+        r.liquidadas += 1;
+        if (e.estado === 'canceled') {
+          a.estado = 'ANULADA';
+          b.saldoDisponible += a.monto;
+          r.anuladas += 1;
+          r.totalPremios += a.monto;
+        } else if (a.seleccion === resultado) {
+          a.estado = 'GANADA';
+          b.saldoDisponible += a.gananciaPotencial;
+          r.ganadas += 1;
+          r.totalPremios += a.gananciaPotencial;
+        } else {
+          a.estado = 'PERDIDA';
+          r.perdidas += 1;
+        }
+      }
+      return r;
     },
     async ListarPromociones(req) {
       let lista = d.promociones.filter((p) => !(req.excluirDestacada && p.destacada));

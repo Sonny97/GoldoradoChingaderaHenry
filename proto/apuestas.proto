@@ -44,6 +44,23 @@ service Apuestas {
   // La llama ms-pagos cuando Wompi aprueba un pago. IDEMPOTENTE por
   // `referencia`: si el webhook y la consulta llegan los dos, se acredita una vez.
   rpc AcreditarDeposito (AcreditarDepositoRequest) returns (MovimientoSaldoResponse);
+  // Retiro a cuenta bancaria (transferencia SIMULADA: no hay pasarela de
+  // pagos salientes). Descuenta saldo_disponible con la condicion dentro del
+  // UPDATE; movimiento RETIRO + evento al libro de Mongo por la bandeja de salida.
+  // Fallos: INVALID_ARGUMENT (monto/datos), FAILED_PRECONDITION 'Saldo insuficiente'.
+  rpc SolicitarRetiro (SolicitarRetiroRequest) returns (RetiroResponse);
+
+  // ---------------------------------------------------------- liquidacion
+  // ADMIN. Lee el partido de ms-deportes (fuente de verdad del resultado):
+  //  - finished: cada apuesta PENDIENTE de sus cuotas pasa a GANADA o PERDIDA
+  //    segun su mercado (1X2, AMBOS_ANOTAN, OVER_UNDER 2.5). GANADA: sale del
+  //    bloqueado el monto y entra al disponible la ganancia_potencial (PREMIO).
+  //    PERDIDA: sale del bloqueado el monto.
+  //  - canceled: ANULADA y se devuelve el monto al disponible (REEMBOLSO).
+  //  Cierra las cuotas del partido (CERRADO). IDEMPOTENTE: solo toca apuestas
+  //  PENDIENTE, asi que liquidar dos veces no paga dos veces.
+  //  Fallo: FAILED_PRECONDITION si el partido no esta finished ni canceled.
+  rpc LiquidarEncuentro (LiquidarEncuentroRequest) returns (LiquidacionResponse);
 
   // ------------------------------------------------------------ promociones
   // Solo vigentes (fecha_expira >= CURRENT_DATE).
@@ -148,6 +165,35 @@ message AcreditarDepositoRequest {
 message MovimientoSaldoResponse {
   bool aplicado = 1;         // false = ya se habia acreditado antes (reintento ignorado)
   Billetera billetera = 2;
+}
+
+message SolicitarRetiroRequest {
+  int64 id_usuario = 1;
+  double monto = 2;             // pesos enteros; minimo 10.000
+  string banco = 3;             // nombre del banco destino
+  string tipo_cuenta = 4;       // AHORROS | CORRIENTE
+  string numero_cuenta = 5;     // 6 a 20 digitos
+}
+
+message RetiroResponse {
+  string referencia = 1;        // 'RET-<idUsuario>-<epochMs>' (codigo en el libro de Mongo)
+  double monto = 2;
+  Billetera billetera = 3;
+  string fecha = 4;
+}
+
+message LiquidarEncuentroRequest {
+  int64 id_encuentro = 1;
+}
+
+message LiquidacionResponse {
+  int64 id_encuentro = 1;
+  string estado_partido = 2;    // finished | canceled
+  int32 liquidadas = 3;         // apuestas tocadas en ESTA llamada (0 si ya estaba liquidado)
+  int32 ganadas = 4;
+  int32 perdidas = 5;
+  int32 anuladas = 6;
+  double total_premios = 7;     // pagado en premios + reembolsos
 }
 
 message ListarPromocionesRequest {

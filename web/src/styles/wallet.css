@@ -501,3 +501,64 @@
     display: none;
   }
 }
+
+/* ========================================================== Retiro (simulado) */
+
+.gd-wallet__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gd-sp-3);
+  justify-content: flex-end;
+}
+
+.gd-withdraw__done-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  color: var(--gd-success);
+  background: var(--gd-success-soft);
+  border: 1px solid var(--gd-success-border);
+}
+
+.gd-withdraw__summary {
+  display: grid;
+  gap: var(--gd-sp-2);
+  width: 100%;
+  margin: 0;
+  padding: var(--gd-sp-4);
+  border: 1px solid var(--gd-border-soft);
+  border-radius: var(--gd-r-md);
+  background: var(--gd-surface-2);
+}
+
+.gd-withdraw__summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--gd-sp-3);
+  font-size: var(--gd-fz-sm);
+}
+
+.gd-withdraw__summary dt {
+  color: var(--gd-text-muted);
+}
+
+.gd-withdraw__summary dd {
+  margin: 0;
+  font-weight: var(--gd-fw-semibold);
+  color: var(--gd-text);
+  font-variant-numeric: tabular-nums;
+  word-break: break-all;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .gd-wallet__actions {
+    justify-content: stretch;
+  }
+
+  .gd-wallet__actions > * {
+    flex: 1 1 0;
+  }
+}

@@ -245,5 +245,112 @@ export function crearRepoApuestas({ consultar, enTransaccion }) {
     return rows.map(aCuota);
   }
 
-  return { contextoDeCuota, registrarApuesta, listarApuestasDeUsuario, resumenDeUsuario, cuotasPorEncuentros };
+  /**
+   * Liquida las apuestas PENDIENTE de un encuentro, todo en UNA transaccion.
+   *
+   * 1. Cierra las cuotas del partido (nadie mas apuesta mientras se liquida).
+   * 2. Toma las apuestas PENDIENTE con FOR UPDATE OF a: si dos liquidaciones
+   *    corren a la vez, la segunda espera y despues ya no las ve PENDIENTE.
+   *    Orden por usuario: las billeteras se bloquean siempre en el mismo orden.
+   * 3. Por cada una, `decidir({ mercado, codigoCorto })` (regla del servicio):
+   *      GANADA  bloqueado -= monto; disponible += ganancia_potencial (PREMIO)
+   *      PERDIDA bloqueado -= monto. Sin movimiento_saldo: el diario registra el
+   *              saldo DISPONIBLE y ese no cambia (el dinero ya salio del
+   *              disponible con el movimiento APUESTA); ademas monto > 0 es CHECK.
+   *      ANULADA bloqueado -= monto; disponible += monto (REEMBOLSO)
+   *      null    mercado sin regla: la apuesta se queda PENDIENTE.
+   *    Cada pago deja movimiento_saldo (referencia 'PREMIO-<id>' / 'REEMBOLSO-<id>',
+   *    UNIQUE: aunque algo fallara arriba, el mismo pago no entra dos veces) y su
+   *    evento en la bandeja de salida, igual que RegistrarApuesta.
+   * Si el bloqueado quedara negativo (datos inconsistentes) el CHECK de
+   * cuenta_saldo aborta TODA la liquidacion: mejor fallar que pagar mal.
+   */
+  async function liquidarEncuentro({ idEncuentro, decidir, cargaEvento }) {
+    return enTransaccion(async (tx) => {
+      await tx.query(
+        `UPDATE cuota_oferta SET estado = 'CERRADO'
+          WHERE id_encuentro = $1 AND estado <> 'CERRADO'`,
+        [idEncuentro]
+      );
+
+      const { rows } = await tx.query(
+        `SELECT a.id_apuesta, a.id_usuario, a.monto_apostado, a.ganancia_potencial,
+                om.codigo_mercado, om.codigo_corto
+           FROM apuesta a
+           JOIN cuota_oferta   co ON co.id_cuota  = a.id_cuota
+           JOIN opcion_mercado om ON om.id_opcion = co.id_opcion
+          WHERE co.id_encuentro = $1
+            AND a.estado_apuesta = 'PENDIENTE'
+          ORDER BY a.id_usuario, a.id_apuesta
+            FOR UPDATE OF a`,
+        [idEncuentro]
+      );
+
+      const resumen = { liquidadas: 0, ganadas: 0, perdidas: 0, anuladas: 0, totalPremios: 0, sinDecidir: 0 };
+
+      for (const fila of rows) {
+        const estado = decidir({ mercado: fila.codigo_mercado, codigoCorto: fila.codigo_corto });
+        if (!estado) {
+          resumen.sinDecidir += 1;
+          continue;
+        }
+
+        const idApuesta = Number(fila.id_apuesta);
+        const idUsuario = Number(fila.id_usuario);
+        const monto = aNumero(fila.monto_apostado);
+        let pago = 0;
+        let tipo = null;
+        if (estado === 'GANADA') {
+          pago = aNumero(fila.ganancia_potencial);
+          tipo = 'PREMIO';
+        } else if (estado === 'ANULADA') {
+          pago = monto;
+          tipo = 'REEMBOLSO';
+        }
+
+        const saldo = await tx.query(
+          `UPDATE cuenta_saldo
+              SET saldo_bloqueado  = saldo_bloqueado  - $2,
+                  saldo_disponible = saldo_disponible + $3,
+                  actualizado_en   = now()
+            WHERE id_usuario = $1
+           RETURNING saldo_disponible`,
+          [idUsuario, monto, pago]
+        );
+
+        if (tipo) {
+          const referencia = `${tipo}-${idApuesta}`;
+          const mov = await tx.query(
+            `INSERT INTO movimiento_saldo (id_usuario, tipo, monto, saldo_disponible_resultante, referencia)
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING creado_en`,
+            [idUsuario, tipo, pago, saldo.rows[0].saldo_disponible, referencia]
+          );
+          const fecha = aFechaHoraIso(mov.rows[0].creado_en);
+          await tx.query(`INSERT INTO evento_salida (tipo, carga) VALUES ('TRANSACCION', $1::jsonb)`, [
+            JSON.stringify(cargaEvento({ tipo, codigo: referencia, idUsuario, monto: pago, idApuesta, fecha })),
+          ]);
+          resumen.totalPremios = Math.round((resumen.totalPremios + pago) * 100) / 100;
+        }
+
+        await tx.query(`UPDATE apuesta SET estado_apuesta = $2 WHERE id_apuesta = $1`, [idApuesta, estado]);
+
+        resumen.liquidadas += 1;
+        if (estado === 'GANADA') resumen.ganadas += 1;
+        else if (estado === 'PERDIDA') resumen.perdidas += 1;
+        else resumen.anuladas += 1;
+      }
+
+      return resumen;
+    });
+  }
+
+  return {
+    contextoDeCuota,
+    registrarApuesta,
+    listarApuestasDeUsuario,
+    resumenDeUsuario,
+    cuotasPorEncuentros,
+    liquidarEncuentro,
+  };
 }

@@ -64,6 +64,16 @@ export function crearHandlers({ servicio, salud }) {
       return { encuentros: await servicio.obtenerEncuentrosPorIds(req.ids) };
     },
 
+    async ActualizarEncuentro(req) {
+      return servicio.actualizarEncuentro({
+        id: req.id,
+        estado: req.estado,
+        minuto: req.minuto,
+        golesLocal: req.golesLocal,
+        golesVisitante: req.golesVisitante,
+      });
+    },
+
     async ListarCalendario(req) {
       return {
         jornadas: await servicio.listarCalendario({
